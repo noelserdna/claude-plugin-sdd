@@ -10,6 +10,6 @@
   "license": "MIT",
   "keywords": ["sdd", "swebok", "specification-driven", "pipeline", "requirements", "traceability"],
   "skills": "./skills/",
-  "agents": "./agents/",
+  "agents": ["./agents/"],
   "hooks": "./hooks/hooks.json"
 }
