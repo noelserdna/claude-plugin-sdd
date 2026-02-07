@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo {\"decision\":\"allow\"}",
+            "command": "echo {}",
             "timeout": 5000
           }
         ]
