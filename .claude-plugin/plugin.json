@@ -1,0 +1,15 @@
+{
+  "name": "sdd",
+  "description": "Specification-Driven Development pipeline based on SWEBOK v4. Complete requirements-to-code pipeline with 9 core skills, automated guardrails, and traceability enforcement.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Andrés",
+    "url": "https://github.com/agarciadelagarza"
+  },
+  "repository": "https://github.com/agarciadelagarza/claude-plugin-sdd",
+  "license": "MIT",
+  "keywords": ["sdd", "swebok", "specification-driven", "pipeline", "requirements", "traceability"],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json"
+}
