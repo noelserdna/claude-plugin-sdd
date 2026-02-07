@@ -5,7 +5,7 @@ Specification-Driven Development pipeline based on SWEBOK v4. A complete require
 ## Installation
 
 ```
-/plugin install github:agarciadelagarza/claude-plugin-sdd
+/plugin install github:noelserdna/claude-plugin-sdd
 ```
 
 ## Quick Start

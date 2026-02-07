@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "author": {
     "name": "Andrés",
-    "url": "https://github.com/agarciadelagarza"
+    "url": "https://github.com/noelserdna"
   },
-  "repository": "https://github.com/agarciadelagarza/claude-plugin-sdd",
+  "repository": "https://github.com/noelserdna/claude-plugin-sdd",
   "license": "MIT",
   "keywords": ["sdd", "swebok", "specification-driven", "pipeline", "requirements", "traceability"],
   "skills": "./skills/",
