@@ -39,10 +39,9 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Respond ONLY with this exact JSON, no other text: {\"decision\": \"allow\"}",
-            "timeout": 10000,
-            "model": "haiku"
+            "type": "command",
+            "command": "echo {\"decision\":\"allow\"}",
+            "timeout": 5000
           }
         ]
       }
