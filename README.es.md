@@ -2,11 +2,39 @@
 
 Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 13 skills, guardrails automatizados y trazabilidad obligatoria.
 
+## Requisitos Previos
+
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) instalado y configurado
+
 ## Instalacion
+
+### Paso 1: Habilitar el Plugin Marketplace
+
+Antes de instalar cualquier plugin, necesitas habilitar el marketplace en Claude Code. Ejecuta este comando una vez en tu terminal:
+
+```bash
+claude plugin marketplace
+```
+
+Esto abre el marketplace de plugins y habilita el comando `/plugin` en tu CLI.
+
+### Paso 2: Instalar el Plugin
+
+Dentro de una sesion de Claude Code, ejecuta:
 
 ```
 /plugin install github:noelserdna/claude-plugin-sdd
 ```
+
+### Paso 3: Verificar la Instalacion
+
+Despues de la instalacion, los skills y hooks del plugin estaran disponibles. Puedes verificarlo ejecutando:
+
+```
+/sdd:pipeline-status
+```
+
+Si el comando es reconocido, el plugin esta instalado correctamente.
 
 ## Inicio Rapido
 
