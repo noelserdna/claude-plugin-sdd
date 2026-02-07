@@ -1,5 +1,7 @@
 # SDD Plugin for Claude Code
 
+> **[Leer en español](README.es.md)**
+
 Specification-Driven Development pipeline based on SWEBOK v4. A complete requirements-to-code pipeline with 13 skills, automated guardrails, and traceability enforcement.
 
 ## Installation
