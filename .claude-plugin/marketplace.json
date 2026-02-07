@@ -1,0 +1,22 @@
+{
+  "name": "noelserdna-plugins",
+  "description": "Plugins by Andrés - Specification-Driven Development tools for Claude Code",
+  "owner": {
+    "name": "Andrés",
+    "url": "https://github.com/noelserdna"
+  },
+  "plugins": [
+    {
+      "name": "sdd",
+      "source": "./",
+      "description": "Specification-Driven Development pipeline based on SWEBOK v4. Complete requirements-to-code pipeline with 9 core skills, automated guardrails, and traceability enforcement.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Andrés",
+        "url": "https://github.com/noelserdna"
+      },
+      "license": "MIT",
+      "keywords": ["sdd", "swebok", "specification-driven", "pipeline", "requirements", "traceability"]
+    }
+  ]
+}
