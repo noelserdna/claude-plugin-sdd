@@ -2,7 +2,7 @@
 
 > **[Leer en español](README.es.md)**
 
-Specification-Driven Development pipeline based on SWEBOK v4. A complete requirements-to-code pipeline with 13 skills, automated guardrails, and traceability enforcement.
+Specification-Driven Development pipeline based on SWEBOK v4. A complete requirements-to-code pipeline with 15 skills, automated guardrails, and traceability enforcement.
 
 ## Prerequisites
 
@@ -87,12 +87,14 @@ task-implementer  ->  src/, tests/, git commits
 | Security Auditor | `/sdd:security-auditor` | OWASP/CWE security posture audit (lateral) |
 | Req Change | `/sdd:req-change` | Manage requirement changes with pipeline cascade (lateral) |
 
-### Utility Skills (3)
+### Utility Skills (5)
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
 | Pipeline Status | `/sdd:pipeline-status` | Show pipeline state, staleness, next action |
 | Traceability Check | `/sdd:traceability-check` | Verify REQ-UC-WF-API-BDD-INV-ADR chain |
+| Dashboard | `/sdd:dashboard` | Generate visual HTML traceability dashboard |
+| Notion Sync | `/sdd:sync-notion` | Bidirectional sync with Notion databases |
 | Session Summary | `/sdd:session-summary` | Summarize session decisions and progress |
 
 ### Setup Skill (1)
@@ -121,6 +123,11 @@ The plugin automatically installs:
 | Constitution Enforcer (A1) | haiku | Validates operations against 11 SDD Constitution articles |
 | Cross-Auditor (A2) | sonnet | Cross-references skill definitions for mismatches |
 | Context Keeper (A3) | haiku | Maintains informal project context |
+| Requirements Watcher (A4) | haiku | Detects requirement changes since last dashboard |
+| Spec Compliance Checker (A5) | sonnet | Verifies src/ implements what spec/ declares |
+| Test Coverage Monitor (A6) | haiku | Calculates % of REQs with BDD/test coverage |
+| Traceability Validator (A7) | haiku | Suspect link detection (IBM DOORS-inspired) |
+| Pipeline Health Monitor (A8) | haiku | Health score 0-100 with actionable recommendations |
 
 ## Traceability Chain
 

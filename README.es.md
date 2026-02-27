@@ -1,6 +1,6 @@
 # SDD Plugin para Claude Code
 
-Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 13 skills, guardrails automatizados y trazabilidad obligatoria.
+Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 15 skills, guardrails automatizados y trazabilidad obligatoria.
 
 ## Requisitos Previos
 
@@ -85,12 +85,14 @@ task-implementer  ->  src/, tests/, git commits
 | Security Auditor | `/sdd:security-auditor` | Auditoria de postura de seguridad OWASP/CWE (lateral) |
 | Req Change | `/sdd:req-change` | Gestionar cambios de requisitos con cascade del pipeline (lateral) |
 
-### Skills de Utilidad (3)
+### Skills de Utilidad (5)
 
 | Skill | Comando | Proposito |
 |-------|---------|-----------|
 | Pipeline Status | `/sdd:pipeline-status` | Mostrar estado del pipeline, staleness y siguiente accion |
 | Traceability Check | `/sdd:traceability-check` | Verificar cadena REQ-UC-WF-API-BDD-INV-ADR |
+| Dashboard | `/sdd:dashboard` | Generar dashboard HTML visual de trazabilidad |
+| Notion Sync | `/sdd:sync-notion` | Sincronizacion bidireccional con bases de datos Notion |
 | Session Summary | `/sdd:session-summary` | Resumir decisiones de sesion y progreso |
 
 ### Skill de Setup (1)
@@ -119,6 +121,11 @@ El plugin instala automaticamente:
 | Constitution Enforcer (A1) | haiku | Valida operaciones contra los 11 articulos de la Constitucion SDD |
 | Cross-Auditor (A2) | sonnet | Cruza definiciones de skills buscando inconsistencias |
 | Context Keeper (A3) | haiku | Mantiene contexto informal del proyecto |
+| Requirements Watcher (A4) | haiku | Detecta cambios en requisitos desde el ultimo dashboard |
+| Spec Compliance Checker (A5) | sonnet | Verifica que src/ implementa lo que spec/ declara |
+| Test Coverage Monitor (A6) | haiku | Calcula % de REQs con cobertura BDD/test |
+| Traceability Validator (A7) | haiku | Deteccion de links sospechosos (inspirado en IBM DOORS) |
+| Pipeline Health Monitor (A8) | haiku | Score de salud 0-100 con recomendaciones accionables |
 
 ## Cadena de Trazabilidad
 
