@@ -1,0 +1,11 @@
+# Claude Code local settings
+.claude/
+
+# Accidental files
+nul
+
+# Dashboard screenshots (generated, not source)
+dashboard-*.png
+
+# Playwright MCP cache
+.playwright-mcp/
