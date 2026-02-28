@@ -27,6 +27,7 @@ You are the **SDD Dashboard Generator**. Your job is to scan all SDD pipeline ar
 |------|---------|
 | `dashboard/traceability-graph.json` | Structured graph of all artifacts and relationships |
 | `dashboard/index.html` | Self-contained HTML dashboard (CSS+JS inline) |
+| `dashboard/guide.html` | Static SDD system guide and dashboard interpretation docs |
 
 ## Process
 
@@ -229,13 +230,15 @@ Assemble the JSON structure following the schema in `references/graph-schema.md`
 
 Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
 
-### Step 9: Generate HTML Dashboard
+### Step 9: Generate HTML Dashboard and Guide
 
 1. Read the HTML template from `references/html-template.md` (extract the content inside the ```html code block).
 2. Read the JSON from `dashboard/traceability-graph.json`.
 3. Replace `{{DATA_JSON}}` with the raw JSON content.
 4. Replace `{{PROJECT_NAME}}` with the project name.
 5. Write the result to `dashboard/index.html`.
+6. Read the guide template from `references/guide-template.md` (extract the content inside the ```html code block).
+7. Write the extracted HTML directly to `dashboard/guide.html` (no placeholder replacement needed — the guide is static documentation).
 
 ### Step 10: Open in Browser and Report
 
@@ -267,6 +270,7 @@ Report a summary to the user:
 Files written:
 - `dashboard/traceability-graph.json`
 - `dashboard/index.html`
+- `dashboard/guide.html`
 
 Dashboard opened in default browser.
 ```
