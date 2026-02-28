@@ -6,7 +6,7 @@ description: "Generates a visual HTML traceability dashboard from SDD pipeline a
   Triggers: 'dashboard', 'visualize pipeline', 'traceability dashboard',
   'show traceability', 'generar dashboard', 'visualizar trazabilidad',
   'show dashboard', 'pipeline visualization', 'ver dashboard'."
-version: "1.0.0"
+version: "2.0.0"
 ---
 
 # SDD Traceability Dashboard
@@ -115,13 +115,102 @@ Scan ALL markdown files in `requirements/`, `spec/`, `audits/`, `test/`, `plan/`
 
 **Deduplication**: Remove duplicate relationships (same source + target + type).
 
-### Step 5: Build traceability-graph.json
+### Step 5: Scan Code References
 
-Assemble the JSON structure following the schema in `references/graph-schema.md`:
+Scan source code files for references to SDD artifact IDs using the patterns from `references/id-patterns-extended.md` section "Code Reference Patterns".
+
+1. **Glob** for source files: `src/**/*.{ts,js,tsx,jsx,py,java,go,rs,cs}`
+2. For each file, search for:
+   - JSDoc/block comment `Refs:` lines
+   - Inline comment refs (`// UC-001`, `// INV-EXT-005`)
+   - Decorator/annotation refs (`@implements("UC-001")`)
+3. For each reference found, extract:
+   ```json
+   {
+     "file": "src/extraction/validators/pdf-validator.ts",
+     "line": 8,
+     "symbol": "validateSize",
+     "symbolType": "function",
+     "refIds": ["UC-001", "INV-EXT-005"]
+   }
+   ```
+4. **Symbol extraction**: Search backward (up to 5 lines) and forward (up to 2 lines) from the Ref line for the nearest symbol definition (function, class, const, etc.). Use `filename:line` as fallback.
+5. **Create relationships**: For each refId found in code, create a relationship of type `implemented-by-code` from the code file to the referenced artifact.
+6. **Propagate to REQs**: For each refId (e.g., `UC-001`), find all REQs that the artifact traces to (via `implements`, `verifies`, `guarantees` chains) and attach the codeRef to those REQs.
+
+**If `src/` does not exist**: Skip this step. Set `codeRefs: []` for all artifacts and `codeStats` to zeros.
+
+### Step 6: Scan Test References
+
+Scan test files for references to SDD artifact IDs using the patterns from `references/id-patterns-extended.md` section "Test Reference Patterns".
+
+1. **Glob** for test files: `tests/**/*.{test,spec}.{ts,js,tsx,jsx}` + `tests/**/*.py` + `test/**/*.{test,spec}.{ts,js,tsx,jsx}`
+2. For each file, search for:
+   - File header `Refs:` lines (same as code JSDoc refs)
+   - Test block description refs (`it('validates per INV-EXT-005', ...)`)
+   - Python test docstring refs
+3. For each reference found, extract:
+   ```json
+   {
+     "file": "tests/unit/extraction/pdf-validator.test.ts",
+     "line": 12,
+     "testName": "accepts size at exact 50MB limit",
+     "framework": "vitest",
+     "refIds": ["UC-001", "INV-EXT-005"]
+   }
+   ```
+4. **Test name extraction**: Extract from the enclosing `it()`/`test()` block description. If inside a `describe()`, prepend the describe name: `"PDF Validator > validates size per INV-EXT-005"`.
+5. **Framework detection**: Check for `vitest.config.*`, `jest.config.*`, `pytest.ini`, or framework-specific imports.
+6. **Create relationships**: For each refId, create a relationship of type `tested-by` from the test file to the referenced artifact.
+7. **Propagate to REQs**: Same propagation logic as Step 5 — attach testRefs to upstream REQs.
+8. **Test-to-code association**: Link test files to source files via path convention or import analysis (for the HTML dashboard's code view).
+
+**If `tests/` and `test/` do not exist**: Skip this step. Set `testRefs: []` for all artifacts and `testStats` to zeros.
+
+### Step 7: Classify Artifacts
+
+For each REQ artifact, compute a classification object using the taxonomy from `references/id-patterns-extended.md` section "Classification Taxonomy".
+
+1. **Business Domain**: Map the REQ's category prefix to a business domain:
+   - Extract category from `REQ-{CATEGORY}-{NUMBER}` (e.g., `EXT` from `REQ-EXT-001`)
+   - Look up in the Business Domain mapping table
+   - If no category or no match, set to `"Other"`
+
+2. **Technical Layer**: Follow the traceability chain to determine layer:
+   - Find TASKs linked to this REQ (through UC → TASK or direct)
+   - Extract FASE numbers from those TASKs (TASK-F{N}-{NNN} → FASE-{N})
+   - Map FASE number to layer: 0=Infrastructure, 1-6=Backend, 7-8=Frontend, 9+=Integration/Deployment
+   - If multiple layers, use the most frequent one
+   - If no TASK/FASE link, set to `"Unknown"`
+
+3. **Functional Category**: Determine from context in REQUIREMENTS.md:
+   - Find the nearest H2/H3 heading above the REQ definition
+   - Match heading text against category keywords
+   - Default to `"Functional"` if no match
+
+4. **Attach classification** to each REQ artifact:
+   ```json
+   {
+     "classification": {
+       "businessDomain": "Extraction & Processing",
+       "technicalLayer": "Backend",
+       "functionalCategory": "Functional"
+     }
+   }
+   ```
+
+**Non-REQ artifacts**: Set `classification: null`. The HTML dashboard resolves their classification at render time from linked REQs.
+
+### Step 8: Build traceability-graph.json
+
+Assemble the JSON structure following the schema in `references/graph-schema.md` (v2):
 
 1. **pipeline**: Merge stage statuses from Step 1 with artifact counts from Step 3.
-2. **artifacts**: All extracted artifacts from Step 3.
-3. **relationships**: All extracted relationships from Step 4.
+2. **artifacts**: All extracted artifacts from Step 3, enriched with:
+   - `classification` from Step 7
+   - `codeRefs` from Step 5
+   - `testRefs` from Step 6
+3. **relationships**: All relationships from Step 4, plus `implemented-by-code` (Step 5) and `tested-by` (Step 6).
 4. **statistics**: Compute:
    - `totalArtifacts`: count of all artifacts
    - `byType`: count per artifact type
@@ -130,12 +219,17 @@ Assemble the JSON structure following the schema in `references/graph-schema.md`
      - `reqsWithUCs`: REQs that have at least one incoming `implements` relationship from a UC
      - `reqsWithBDD`: REQs that have at least one incoming `verifies` relationship from a BDD
      - `reqsWithTasks`: REQs traceable to at least one TASK (through any chain of relationships)
+     - `reqsWithCode`: REQs that have at least one `codeRef` (directly or via traceability chain)
+     - `reqsWithTests`: REQs that have at least one `testRef` (directly or via traceability chain)
    - `orphans`: artifact IDs that have zero incoming relationships (no other artifact references them)
    - `brokenReferences`: IDs that appear in cross-references but are not defined in any artifact
+   - `codeStats`: `{ totalFiles, totalSymbols, symbolsWithRefs }`
+   - `testStats`: `{ totalTestFiles, totalTests, testsWithRefs }`
+   - `classificationStats`: `{ byDomain, byLayer, byCategory }` — count of REQs per classification value
 
 Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
 
-### Step 6: Generate HTML Dashboard
+### Step 9: Generate HTML Dashboard
 
 1. Read the HTML template from `references/html-template.md` (extract the content inside the ```html code block).
 2. Read the JSON from `dashboard/traceability-graph.json`.
@@ -143,7 +237,7 @@ Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
 4. Replace `{{PROJECT_NAME}}` with the project name.
 5. Write the result to `dashboard/index.html`.
 
-### Step 7: Open in Browser and Report
+### Step 10: Open in Browser and Report
 
 Execute the appropriate command to open the dashboard:
 - **Windows**: `start dashboard/index.html`
@@ -153,14 +247,19 @@ Execute the appropriate command to open the dashboard:
 Report a summary to the user:
 
 ```
-## Dashboard Generated
+## Dashboard Generated (v2)
 
 | Metric | Value |
 |--------|-------|
 | Total Artifacts | {N} |
 | Artifact Types | REQ:{n}, UC:{n}, WF:{n}, API:{n}, BDD:{n}, INV:{n}, ADR:{n}, TASK:{n} |
 | Total Relationships | {N} |
-| Traceability Coverage | {N}% REQs with UCs |
+| REQs with UCs | {N}% ({count}/{total}) |
+| REQs with Code | {N}% ({count}/{total}) |
+| REQs with Tests | {N}% ({count}/{total}) |
+| Code Files Scanned | {N} ({symbolsWithRefs} symbols with refs) |
+| Test Files Scanned | {N} ({testsWithRefs} tests with refs) |
+| Classification | {domains} domains, {layers} layers |
 | Orphaned Artifacts | {N} |
 | Broken References | {N} |
 | Pipeline Stage | {currentStage} |

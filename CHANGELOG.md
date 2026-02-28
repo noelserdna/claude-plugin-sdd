@@ -5,6 +5,37 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-28
+
+### Changed
+- **Dashboard v3.0.0 — Comprehension Dashboard**: UX overhaul for non-technical stakeholders
+  - New Executive Summary view as default tab: coverage progress bars, top gaps, artifact breakdown, pipeline status
+  - Health Score hero banner: weighted letter grade (A-F) with actionable recommendations
+  - Humanized all labels: UC → Use Cases, WF → Workflows, BDD → Acceptance Tests, INV → Business Rules, ADR → Decisions
+  - Status labels: Full → Complete, Partial → In Progress, Spec Only → Specified, Untraced → Not Started
+  - Color legend below stats cards for status dot meanings
+  - WCAG AA contrast fixes: improved --text2, --text3, --yellow, --gray color values
+  - Contextual tooltips on all stats cards and zero-count matrix cells
+  - Responsive hero banner (column layout on mobile)
+  - No schema changes — all improvements are UI/presentation only
+
+## [1.2.0] - 2026-02-27
+
+### Changed
+- **Dashboard v2.0.0 — Comprehension Dashboard**: Major upgrade to the traceability dashboard skill
+  - Traces REQs to source code: scans `src/` for `Refs:` comments in JSDoc, inline comments, and decorators
+  - Traces REQs to tests: scans `tests/` for artifact references in test descriptions and file headers
+  - Auto-classifies REQs by business domain (from prefix), technical layer (from FASE), and functional category (from section headers)
+  - New graph schema v2: `codeRefs[]`, `testRefs[]`, `classification{}` on artifacts; `codeStats`, `testStats`, `classificationStats` in statistics
+  - New relationship types: `implemented-by-code` (code→artifact), `tested-by` (test→artifact)
+  - New HTML dashboard views: Matrix (enhanced), Classification (domain grouping), Code Coverage (file-level detail)
+  - Redesigned detail panel with 5 tabs: Story (narrative), Trace Chain, Code, Tests, Documents
+  - New filters: Domain, Layer, Category dropdowns
+  - New status calculation: Full (REQ+UC+BDD+TASK+Code+Tests), Partial, Spec Only, Untraced
+  - Symbol extraction from code: functions, classes, consts with fallback to filename:line
+  - Test framework detection: vitest, jest, pytest, jasmine
+  - Reference documents updated: `id-patterns-extended.md`, `graph-schema.md`, `html-template.md`
+
 ## [1.1.0] - 2026-02-27
 
 ### Added

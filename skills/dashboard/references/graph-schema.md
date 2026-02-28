@@ -1,12 +1,12 @@
 # Traceability Graph JSON Schema
 
-Schema for `dashboard/traceability-graph.json` — the structured representation of all SDD artifacts and their relationships.
+Schema for `dashboard/traceability-graph.json` — the structured representation of all SDD artifacts, code references, test references, classifications, and their relationships.
 
 ## Full Schema
 
 ```json
 {
-  "$schema": "traceability-graph-v1",
+  "$schema": "traceability-graph-v2",
   "generatedAt": "2026-02-27T15:30:00.000Z",
   "projectName": "my-project",
 
@@ -67,7 +67,30 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
       "file": "requirements/REQUIREMENTS.md",
       "line": 42,
       "priority": "Must Have",
-      "stage": "requirements-engineer"
+      "stage": "requirements-engineer",
+      "classification": {
+        "businessDomain": "Extraction & Processing",
+        "technicalLayer": "Backend",
+        "functionalCategory": "Functional"
+      },
+      "codeRefs": [
+        {
+          "file": "src/extraction/validators/pdf-validator.ts",
+          "line": 8,
+          "symbol": "validateSize",
+          "symbolType": "function",
+          "refIds": ["UC-001", "INV-EXT-005"]
+        }
+      ],
+      "testRefs": [
+        {
+          "file": "tests/unit/extraction/pdf-validator.test.ts",
+          "line": 12,
+          "testName": "accepts size at exact 50MB limit",
+          "framework": "vitest",
+          "refIds": ["UC-001", "INV-EXT-005"]
+        }
+      ]
     }
   ],
 
@@ -100,7 +123,9 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
     "traceabilityCoverage": {
       "reqsWithUCs": { "count": 280, "total": 330, "percentage": 84.8 },
       "reqsWithBDD": { "count": 200, "total": 330, "percentage": 60.6 },
-      "reqsWithTasks": { "count": 250, "total": 330, "percentage": 75.8 }
+      "reqsWithTasks": { "count": 250, "total": 330, "percentage": 75.8 },
+      "reqsWithCode": { "count": 180, "total": 330, "percentage": 54.5 },
+      "reqsWithTests": { "count": 160, "total": 330, "percentage": 48.5 }
     },
     "orphans": ["INV-SYS-042", "NFR-015"],
     "brokenReferences": [
@@ -109,7 +134,41 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
         "referencedIn": "spec/workflows/WF-003.md",
         "line": 15
       }
-    ]
+    ],
+    "codeStats": {
+      "totalFiles": 85,
+      "totalSymbols": 340,
+      "symbolsWithRefs": 120
+    },
+    "testStats": {
+      "totalTestFiles": 42,
+      "totalTests": 285,
+      "testsWithRefs": 95
+    },
+    "classificationStats": {
+      "byDomain": {
+        "Extraction & Processing": 45,
+        "Security & Auth": 30,
+        "Frontend & UI": 25,
+        "Data & Storage": 20,
+        "Integration & APIs": 15,
+        "Other": 5
+      },
+      "byLayer": {
+        "Infrastructure": 10,
+        "Backend": 80,
+        "Frontend": 40,
+        "Integration/Deployment": 5,
+        "Unknown": 10
+      },
+      "byCategory": {
+        "Functional": 200,
+        "Non-Functional": 50,
+        "Security": 30,
+        "Data": 25,
+        "Integration": 25
+      }
+    }
   }
 }
 ```
@@ -120,7 +179,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `$schema` | string | Yes | Always `"traceability-graph-v1"` |
+| `$schema` | string | Yes | Always `"traceability-graph-v2"` |
 | `generatedAt` | string (ISO-8601) | Yes | When the graph was generated |
 | `projectName` | string | Yes | Name of the project (from `package.json`, directory name, or `pipeline-state.json`) |
 
@@ -152,6 +211,43 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `line` | number | Yes | Line number of definition |
 | `priority` | string or null | No | Priority level if available |
 | `stage` | string | Yes | Pipeline stage that owns this artifact |
+| `classification` | object or null | No | Business/technical/functional classification (see below) |
+| `codeRefs` | array | No | Source code references implementing this artifact (see below) |
+| `testRefs` | array | No | Test references verifying this artifact (see below) |
+
+### artifacts[].classification
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `businessDomain` | string | Yes | Business domain inferred from REQ prefix (see `id-patterns-extended.md` Classification Taxonomy) |
+| `technicalLayer` | string | Yes | Technical layer inferred from FASE mapping: `"Infrastructure"`, `"Backend"`, `"Frontend"`, `"Integration/Deployment"`, `"Unknown"` |
+| `functionalCategory` | string | Yes | Functional category inferred from section headers: `"Functional"`, `"Non-Functional"`, `"Security"`, `"Data"`, `"Integration"` |
+
+**Applies to**: REQ artifacts only. Other artifact types inherit classification from their linked REQs (not stored in JSON — resolved at render time by the HTML dashboard).
+
+### artifacts[].codeRefs[]
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | string | Yes | Relative path to source file (forward slashes) |
+| `line` | number | Yes | Line number where the Ref comment was found |
+| `symbol` | string | Yes | Nearest symbol name (function, class, const, etc.) or `"filename:line"` fallback |
+| `symbolType` | string | Yes | Symbol type: `"function"`, `"class"`, `"const"`, `"interface"`, `"type"`, `"method"`, `"variable"`, `"unknown"` |
+| `refIds` | array of strings | Yes | Artifact IDs referenced in the Ref comment (e.g., `["UC-001", "INV-EXT-005"]`) |
+
+**Propagation**: A codeRef is attached to a REQ if any of its `refIds` match a UC/INV/BDD/WF/API that traces back to that REQ. Direct REQ references in code are also captured.
+
+### artifacts[].testRefs[]
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | string | Yes | Relative path to test file (forward slashes) |
+| `line` | number | Yes | Line number of the test definition or Ref comment |
+| `testName` | string | Yes | Test description (e.g., `"validates size per INV-EXT-005"`) |
+| `framework` | string | Yes | Test framework: `"vitest"`, `"jest"`, `"pytest"`, `"jasmine"`, `"unknown"` |
+| `refIds` | array of strings | Yes | Artifact IDs referenced in the test (e.g., `["UC-001", "INV-EXT-005"]`) |
+
+**Propagation**: Same as codeRefs — testRefs propagate to REQs via the traceability chain.
 
 ### relationships[]
 
@@ -174,6 +270,8 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `decides` | ADR decides architecture | ADR → REQ/NFR |
 | `decomposes` | TASK decomposes FASE | TASK → FASE |
 | `implemented-by` | Task Refs field | TASK → UC/API/INV |
+| `implemented-by-code` | Code file references artifact | code → UC/INV/API |
+| `tested-by` | Test file references artifact | test → UC/INV/BDD |
 | `reads-from` | FASE reads spec | FASE → spec artifacts |
 | `traces-to` | Generic cross-reference | any → any |
 
@@ -187,6 +285,9 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `traceabilityCoverage` | object | Coverage metrics |
 | `orphans` | array of strings | Artifact IDs with no incoming references |
 | `brokenReferences` | array | References to undefined artifacts |
+| `codeStats` | object | Code scanning statistics |
+| `testStats` | object | Test scanning statistics |
+| `classificationStats` | object | Classification breakdown statistics |
 
 ### traceabilityCoverage
 
@@ -195,8 +296,52 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `reqsWithUCs` | coverage | REQs that have at least one UC |
 | `reqsWithBDD` | coverage | REQs that have at least one BDD |
 | `reqsWithTasks` | coverage | REQs traceable to at least one TASK |
+| `reqsWithCode` | coverage | REQs that have at least one codeRef (directly or via chain) |
+| `reqsWithTests` | coverage | REQs that have at least one testRef (directly or via chain) |
 
 Each coverage object: `{ "count": N, "total": M, "percentage": P }`
+
+### codeStats
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalFiles` | number | Total source files scanned in `src/` |
+| `totalSymbols` | number | Total exported symbols found across all files |
+| `symbolsWithRefs` | number | Symbols that have at least one SDD artifact reference |
+
+### testStats
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalTestFiles` | number | Total test files scanned |
+| `totalTests` | number | Total test cases (it/test blocks) found |
+| `testsWithRefs` | number | Tests that reference at least one SDD artifact |
+
+### classificationStats
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `byDomain` | object | Count of REQs per business domain (keys from Classification Taxonomy) |
+| `byLayer` | object | Count of REQs per technical layer (`Infrastructure`, `Backend`, `Frontend`, `Integration/Deployment`, `Unknown`) |
+| `byCategory` | object | Count of REQs per functional category (`Functional`, `Non-Functional`, `Security`, `Data`, `Integration`) |
+
+## Migration from v1
+
+| v1 Field | v2 Change |
+|----------|-----------|
+| `$schema: "traceability-graph-v1"` | Changed to `"traceability-graph-v2"` |
+| `artifacts[].classification` | **New**: added classification object |
+| `artifacts[].codeRefs` | **New**: added code reference array |
+| `artifacts[].testRefs` | **New**: added test reference array |
+| `statistics.traceabilityCoverage.reqsWithCode` | **New**: code coverage metric |
+| `statistics.traceabilityCoverage.reqsWithTests` | **New**: test coverage metric |
+| `statistics.codeStats` | **New**: code scanning stats |
+| `statistics.testStats` | **New**: test scanning stats |
+| `statistics.classificationStats` | **New**: classification breakdown |
+| Relationship type `implemented-by-code` | **New**: code→artifact reference |
+| Relationship type `tested-by` | **New**: test→artifact reference |
+
+All v1 fields remain unchanged. v2 is a backward-compatible extension.
 
 ## Notes
 
@@ -204,3 +349,6 @@ Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 - `line` is 1-indexed.
 - Duplicate relationships (same source+target+type) are deduplicated.
 - Artifacts with the same ID but found in multiple files use the first occurrence as the definition.
+- `codeRefs` and `testRefs` are empty arrays `[]` when no code/test references are found (not omitted).
+- `classification` is `null` for non-REQ artifacts and for REQs without a recognized category prefix.
+- Projects without `src/` or `tests/` directories will have empty `codeStats`/`testStats` with zero values.
