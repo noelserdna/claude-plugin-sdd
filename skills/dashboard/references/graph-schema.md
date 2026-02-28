@@ -90,6 +90,17 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
           "framework": "vitest",
           "refIds": ["UC-001", "INV-EXT-005"]
         }
+      ],
+      "commitRefs": [
+        {
+          "sha": "abc1234",
+          "fullSha": "abc1234567890abcdef1234567890abcdef123456",
+          "message": "feat(extraction): add PDF upload endpoint",
+          "author": "developer",
+          "date": "2026-02-27T15:30:00.000Z",
+          "taskId": "TASK-F1-003",
+          "refIds": ["UC-001", "INV-EXT-005"]
+        }
       ]
     }
   ],
@@ -125,7 +136,8 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
       "reqsWithBDD": { "count": 200, "total": 330, "percentage": 60.6 },
       "reqsWithTasks": { "count": 250, "total": 330, "percentage": 75.8 },
       "reqsWithCode": { "count": 180, "total": 330, "percentage": 54.5 },
-      "reqsWithTests": { "count": 160, "total": 330, "percentage": 48.5 }
+      "reqsWithTests": { "count": 160, "total": 330, "percentage": 48.5 },
+      "reqsWithCommits": { "count": 170, "total": 330, "percentage": 51.5 }
     },
     "orphans": ["INV-SYS-042", "NFR-015"],
     "brokenReferences": [
@@ -144,6 +156,12 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
       "totalTestFiles": 42,
       "totalTests": 285,
       "testsWithRefs": 95
+    },
+    "commitStats": {
+      "totalCommits": 48,
+      "commitsWithRefs": 42,
+      "commitsWithTasks": 45,
+      "uniqueTasksCovered": 40
     },
     "classificationStats": {
       "byDomain": {
@@ -214,6 +232,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `classification` | object or null | No | Business/technical/functional classification (see below) |
 | `codeRefs` | array | No | Source code references implementing this artifact (see below) |
 | `testRefs` | array | No | Test references verifying this artifact (see below) |
+| `commitRefs` | array | No | Git commits referencing this artifact via Refs/Task trailers (see below) |
 
 ### artifacts[].classification
 
@@ -249,6 +268,20 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 
 **Propagation**: Same as codeRefs — testRefs propagate to REQs via the traceability chain.
 
+### artifacts[].commitRefs[]
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sha` | string | Yes | Short SHA (7 chars) of the commit |
+| `fullSha` | string | Yes | Full 40-char SHA of the commit |
+| `message` | string | Yes | Commit subject line (first line of commit message) |
+| `author` | string | Yes | Commit author name |
+| `date` | string (ISO-8601) | Yes | Commit author date |
+| `taskId` | string or null | Yes | Task ID from `Task:` trailer (e.g., `"TASK-F0-003"`), null if no Task trailer |
+| `refIds` | array of strings | Yes | Artifact IDs from `Refs:` trailer (e.g., `["UC-002", "ADR-003"]`) |
+
+**Propagation**: A commitRef is attached to a REQ if any of its `refIds` match a UC/INV/BDD/WF/API that traces back to that REQ (same logic as codeRefs/testRefs). Commits with `Task:` trailers also propagate via the TASK → FASE → spec chain.
+
 ### relationships[]
 
 | Field | Type | Required | Description |
@@ -272,6 +305,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `implemented-by` | Task Refs field | TASK → UC/API/INV |
 | `implemented-by-code` | Code file references artifact | code → UC/INV/API |
 | `tested-by` | Test file references artifact | test → UC/INV/BDD |
+| `implemented-by-commit` | Commit references artifact via Refs/Task trailers | commit → UC/INV/API/TASK |
 | `reads-from` | FASE reads spec | FASE → spec artifacts |
 | `traces-to` | Generic cross-reference | any → any |
 
@@ -287,6 +321,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `brokenReferences` | array | References to undefined artifacts |
 | `codeStats` | object | Code scanning statistics |
 | `testStats` | object | Test scanning statistics |
+| `commitStats` | object | Commit scanning statistics |
 | `classificationStats` | object | Classification breakdown statistics |
 
 ### traceabilityCoverage
@@ -298,6 +333,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `reqsWithTasks` | coverage | REQs traceable to at least one TASK |
 | `reqsWithCode` | coverage | REQs that have at least one codeRef (directly or via chain) |
 | `reqsWithTests` | coverage | REQs that have at least one testRef (directly or via chain) |
+| `reqsWithCommits` | coverage | REQs that have at least one commitRef (directly or via chain) |
 
 Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 
@@ -316,6 +352,15 @@ Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 | `totalTestFiles` | number | Total test files scanned |
 | `totalTests` | number | Total test cases (it/test blocks) found |
 | `testsWithRefs` | number | Tests that reference at least one SDD artifact |
+
+### commitStats
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalCommits` | number | Total commits scanned with `Refs:` or `Task:` trailers |
+| `commitsWithRefs` | number | Commits that have a `Refs:` trailer with at least one valid artifact ID |
+| `commitsWithTasks` | number | Commits that have a `Task:` trailer |
+| `uniqueTasksCovered` | number | Distinct TASK IDs referenced across all commits |
 
 ### classificationStats
 
@@ -341,6 +386,11 @@ Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 | Relationship type `implemented-by-code` | **New**: code→artifact reference |
 | Relationship type `tested-by` | **New**: test→artifact reference |
 
+| `artifacts[].commitRefs` | **New**: git commit reference array |
+| `statistics.traceabilityCoverage.reqsWithCommits` | **New**: commit coverage metric |
+| `statistics.commitStats` | **New**: commit scanning stats |
+| Relationship type `implemented-by-commit` | **New**: commit→artifact reference |
+
 All v1 fields remain unchanged. v2 is a backward-compatible extension.
 
 ## Notes
@@ -349,6 +399,7 @@ All v1 fields remain unchanged. v2 is a backward-compatible extension.
 - `line` is 1-indexed.
 - Duplicate relationships (same source+target+type) are deduplicated.
 - Artifacts with the same ID but found in multiple files use the first occurrence as the definition.
-- `codeRefs` and `testRefs` are empty arrays `[]` when no code/test references are found (not omitted).
+- `codeRefs`, `testRefs`, and `commitRefs` are empty arrays `[]` when no references are found (not omitted).
 - `classification` is `null` for non-REQ artifacts and for REQs without a recognized category prefix.
 - Projects without `src/` or `tests/` directories will have empty `codeStats`/`testStats` with zero values.
+- Projects without git or without commits using `Refs:`/`Task:` trailers will have empty `commitStats` with zero values and empty `commitRefs` arrays.

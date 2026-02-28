@@ -519,6 +519,12 @@ tr.row-none td:last-child{color:var(--red)}
   addStat("Requirements with Code", covCode.toFixed(1) + "%", (cov.reqsWithCode ? cov.reqsWithCode.count + "/" + cov.reqsWithCode.total : ""), covCode >= 60 ? "good" : "", "Percentage of requirements referenced by source code (Refs: comments)");
   var covTest = cov.reqsWithTests ? cov.reqsWithTests.percentage : 0;
   addStat("Requirements with Tests", covTest.toFixed(1) + "%", (cov.reqsWithTests ? cov.reqsWithTests.count + "/" + cov.reqsWithTests.total : ""), covTest >= 60 ? "good" : "", "Percentage of requirements referenced by test files");
+  var cs = st.commitStats || {};
+  if (cs.totalCommits > 0) {
+    addStat("Commits", cs.totalCommits, cs.commitsWithRefs + " with refs, " + cs.commitsWithTasks + " with tasks", "", "Git commits with Refs: or Task: trailers linking to SDD artifacts");
+    var covCommit = cov.reqsWithCommits ? cov.reqsWithCommits.percentage : 0;
+    addStat("Requirements with Commits", covCommit.toFixed(1) + "%", (cov.reqsWithCommits ? cov.reqsWithCommits.count + "/" + cov.reqsWithCommits.total : ""), covCommit >= 50 ? "good" : "", "Percentage of requirements linked to at least one git commit via Refs/Task trailers");
+  }
   var orphanCount = (st.orphans || []).length;
   addStat("Orphans", orphanCount, "Unreferenced", orphanCount > 0 ? "warn" : "good", "Artifacts not referenced by any other artifact");
   var brokenCount = (st.brokenReferences || []).length;
@@ -869,6 +875,11 @@ tr.row-none td:last-child{color:var(--red)}
     addCovStat(sumEl, "Symbols with Refs", cs.symbolsWithRefs || 0, "of " + (cs.totalSymbols || 0) + " total");
     addCovStat(sumEl, "Test Files", ts.totalTestFiles || 0, "Scanned in tests/");
     addCovStat(sumEl, "Tests with Refs", ts.testsWithRefs || 0, "of " + (ts.totalTests || 0) + " total");
+    var cms = st.commitStats || {};
+    if (cms.totalCommits > 0) {
+      addCovStat(sumEl, "Commits", cms.totalCommits, cms.commitsWithRefs + " with refs");
+      addCovStat(sumEl, "Tasks Covered", cms.uniqueTasksCovered || 0, "by commits");
+    }
 
     // Build file → codeRefs map
     var fileMap = {};
@@ -1343,7 +1354,8 @@ tr.row-none td:last-child{color:var(--red)}
       { label: "Requirements \u2192 Code", val: cov.reqsWithCode, target: TARGETS.code },
       { label: "Requirements \u2192 Tests", val: cov.reqsWithTests, target: TARGETS.tests },
       { label: "Requirements \u2192 Acceptance Tests", val: cov.reqsWithBDD, target: TARGETS.bdd },
-      { label: "Requirements \u2192 Tasks", val: cov.reqsWithTasks, target: TARGETS.tasks }
+      { label: "Requirements \u2192 Tasks", val: cov.reqsWithTasks, target: TARGETS.tasks },
+      { label: "Requirements \u2192 Commits", val: cov.reqsWithCommits, target: 50 }
     ];
     metrics.forEach(function(m) {
       var pct = m.val ? m.val.percentage : 0;

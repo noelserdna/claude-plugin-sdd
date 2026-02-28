@@ -141,6 +141,50 @@ Scan source code files for references to SDD artifact IDs using the patterns fro
 
 **If `src/` does not exist**: Skip this step. Set `codeRefs: []` for all artifacts and `codeStats` to zeros.
 
+### Step 5.5: Scan Commit References
+
+Scan git history for commits that reference SDD artifacts via `Refs:` and `Task:` trailers.
+
+1. **Check git availability**:
+   ```bash
+   git rev-parse --is-inside-work-tree 2>/dev/null
+   ```
+   If this fails, skip this step entirely. Set `commitRefs: []` for all artifacts and `commitStats` to zeros.
+
+2. **Extract commits with `Refs:` trailers** (limit to 500 for performance):
+   ```bash
+   git log --all --format='%H|%h|%s|%an|%aI|%b' --grep='Refs:' | head -500
+   ```
+
+3. **Extract commits with `Task:` trailers** (merge with above, dedup by SHA):
+   ```bash
+   git log --all --format='%H|%h|%s|%an|%aI|%b' --grep='Task:' | head -500
+   ```
+
+4. **Build commitRef objects** from each unique commit:
+   - Parse the `Refs:` line from the body to extract artifact IDs (e.g., `Refs: FASE-0, UC-002, ADR-003`)
+   - Parse the `Task:` line from the body to extract task ID (e.g., `Task: TASK-F0-003`)
+   - Construct:
+     ```json
+     {
+       "sha": "{short-sha}",
+       "fullSha": "{full-sha}",
+       "message": "{subject}",
+       "author": "{author}",
+       "date": "{ISO-8601 date}",
+       "taskId": "{TASK-ID or null}",
+       "refIds": ["{extracted artifact IDs}"]
+     }
+     ```
+
+5. **Create relationships**: For each refId in a commit, create a relationship of type `implemented-by-commit` from the commit (identified as `commit:{sha}`) to the referenced artifact.
+
+6. **Attach commitRefs to artifacts**: For each artifact referenced by a commit's `refIds` or linked via its `taskId`, attach the commitRef to that artifact's `commitRefs[]` array.
+
+7. **Propagate to REQs**: For each refId (e.g., `UC-001`), find all REQs that the artifact traces to (via `implements`, `verifies`, `guarantees` chains) and attach the commitRef to those REQs. Same propagation logic as codeRefs/testRefs.
+
+**If git is not available or no commits with trailers exist**: Set `commitRefs: []` for all artifacts, `commitStats` to `{ totalCommits: 0, commitsWithRefs: 0, commitsWithTasks: 0, uniqueTasksCovered: 0 }`.
+
 ### Step 6: Scan Test References
 
 Scan test files for references to SDD artifact IDs using the patterns from `references/id-patterns-extended.md` section "Test Reference Patterns".
@@ -211,7 +255,8 @@ Assemble the JSON structure following the schema in `references/graph-schema.md`
    - `classification` from Step 7
    - `codeRefs` from Step 5
    - `testRefs` from Step 6
-3. **relationships**: All relationships from Step 4, plus `implemented-by-code` (Step 5) and `tested-by` (Step 6).
+   - `commitRefs` from Step 5.5
+3. **relationships**: All relationships from Step 4, plus `implemented-by-code` (Step 5), `tested-by` (Step 6), and `implemented-by-commit` (Step 5.5).
 4. **statistics**: Compute:
    - `totalArtifacts`: count of all artifacts
    - `byType`: count per artifact type
@@ -222,10 +267,12 @@ Assemble the JSON structure following the schema in `references/graph-schema.md`
      - `reqsWithTasks`: REQs traceable to at least one TASK (through any chain of relationships)
      - `reqsWithCode`: REQs that have at least one `codeRef` (directly or via traceability chain)
      - `reqsWithTests`: REQs that have at least one `testRef` (directly or via traceability chain)
+     - `reqsWithCommits`: REQs that have at least one `commitRef` (directly or via traceability chain)
    - `orphans`: artifact IDs that have zero incoming relationships (no other artifact references them)
    - `brokenReferences`: IDs that appear in cross-references but are not defined in any artifact
    - `codeStats`: `{ totalFiles, totalSymbols, symbolsWithRefs }`
    - `testStats`: `{ totalTestFiles, totalTests, testsWithRefs }`
+   - `commitStats`: `{ totalCommits, commitsWithRefs, commitsWithTasks, uniqueTasksCovered }`
    - `classificationStats`: `{ byDomain, byLayer, byCategory }` — count of REQs per classification value
 
 Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
@@ -262,6 +309,8 @@ Report a summary to the user:
 | REQs with Tests | {N}% ({count}/{total}) |
 | Code Files Scanned | {N} ({symbolsWithRefs} symbols with refs) |
 | Test Files Scanned | {N} ({testsWithRefs} tests with refs) |
+| Commits Scanned | {N} ({commitsWithRefs} with refs, {commitsWithTasks} with tasks) |
+| REQs with Commits | {N}% ({count}/{total}) |
 | Classification | {domains} domains, {layers} layers |
 | Orphaned Artifacts | {N} |
 | Broken References | {N} |
