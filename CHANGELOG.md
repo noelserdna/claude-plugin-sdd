@@ -5,6 +5,26 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-28
+
+### Added
+- **SDD System Guide**: self-contained HTML documentation page (`guide.html`) generated alongside the dashboard
+  - Part 1: Full SDD system documentation (9 pipeline skills, traceability chain, automation hooks/agents, utility skills)
+  - Part 2: Dashboard interpretation guide (all views, metrics, health score formula, color legend, glossary)
+  - Sticky sidebar navigation with scroll-spy active tracking
+  - Same dark theme as dashboard, responsive at 768px
+  - "Guide" button in dashboard header linking to `guide.html`; "Back to Dashboard" link in guide
+  - New reference: `guide-template.md`
+- **Per-file Test Coverage Map** across pipeline skills
+  - plan-architect: Coverage Map §7.4 in FASE templates (source file → test file mapping with classification)
+  - task-generator: 1 test task per source file from Coverage Map; new validations V-13, V-14
+  - task-implementer: per-file coverage verification (0% = CRITICAL, <80% domain logic = WARNING), coverage in completion report
+  - New verification dimension: Dimension 4 (Coverage) with CHECK-COV-01 through CHECK-COV-04
+
+### Changed
+- Dashboard SKILL.md Step 9 now generates both `index.html` and `guide.html`
+- Dashboard output artifacts: added `dashboard/guide.html`
+
 ## [1.3.0] - 2026-02-28
 
 ### Changed
