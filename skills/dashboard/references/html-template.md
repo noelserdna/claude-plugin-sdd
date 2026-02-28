@@ -31,8 +31,10 @@ button{font-family:var(--font);cursor:pointer}
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header h1{font-size:18px;font-weight:600}
 .header h1 span{color:var(--accent);font-weight:700}
-.header-meta{font-size:12px;color:var(--text2)}
+.header-meta{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px}
 .header-version{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:8px}
+.header-guide{margin-left:12px;font-size:11px;padding:3px 10px;border-radius:4px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);text-decoration:none;font-weight:600}
+.header-guide:hover{background:var(--surface3);text-decoration:none}
 
 /* Pipeline Bar */
 .pipeline{padding:20px 24px;display:flex;gap:4px;align-items:center;overflow-x:auto}
@@ -283,6 +285,7 @@ tr.row-none td:last-child{color:var(--red)}
   <h1><span>SDD</span> Dashboard <span class="header-version">v3</span></h1>
   <div class="header-meta">
     <span id="hdr-project"></span> &middot; <span id="hdr-time"></span>
+    <a href="guide.html" class="header-guide" title="System documentation and dashboard guide">Guide</a>
   </div>
 </div>
 
