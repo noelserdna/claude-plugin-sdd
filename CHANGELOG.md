@@ -5,6 +5,29 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-02-28
+
+### Added
+- **Commit Traceability Integration**: commits are now a first-class link in the SDD traceability chain
+  - Extended chain: `REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE → TEST`
+  - task-implementer Phase 7: SHA capture via `git rev-parse --short HEAD` after each atomic commit
+  - task-implementer Phase 8: progress reports include SHA (`→ commit abc1234`)
+  - task-implementer Phase 9: completion report includes full commit log table (Task/SHA/Message/Refs)
+  - CHECK-C03: full implementation procedure (search by Task trailer → fallback subject → verify file scope → graceful degradation)
+  - commit-conventions.md: new "SHA Capture & Traceability" section documenting the extended chain
+  - Dashboard graph schema: `commitRefs[]` on artifacts, `implemented-by-commit` relationship type
+  - Dashboard statistics: `commitStats` (totalCommits, commitsWithRefs, commitsWithTasks, uniqueTasksCovered) and `reqsWithCommits` coverage metric
+  - Dashboard Step 5.5: "Scan Commit References" — scans git log for `Refs:` and `Task:` trailers, builds commitRef objects, propagates to REQs
+  - Dashboard HTML: "Commits" and "Requirements with Commits" stat cards, progress bar in Summary view, commit stats in Code Coverage view
+  - traceability-check Step 5: "Commit Chain Verification" — TASK→commit mapping, gap detection (tasks without commits, commits without refs, broken refs), commit coverage metric
+  - traceability-patterns.md: TASK ID pattern (`TASK-F\d{1,2}-\d{3,4}`), "Commit Reference Patterns" section (Task/Refs trailers, git log extraction)
+  - req-change Phase 2 step 7: "Commit Impact Analysis" — artifact→commits→files blast radius estimation via git log
+
+### Changed
+- Dashboard schema remains v2 (backward compatible): `commitRefs` defaults to `[]`, `commitStats` to zeros
+- All git checks include graceful degradation (skip if not inside a git repository)
+- Session Report table expanded with SHA and Commit Message columns
+
 ## [1.4.0] - 2026-02-28
 
 ### Added
