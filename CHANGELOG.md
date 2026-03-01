@@ -5,6 +5,25 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-03-01
+
+### Dashboard v5 — Interactive Prompts & Live Status (Phase 1)
+- **Contextual Prompt Generation**: `getStagePrompt()` and `getNextAction()` produce Spanish-language, context-aware prompts based on pipeline state and coverage gaps — paste directly into Claude Code
+- **Copy-to-Clipboard**: All prompts have "Copy" buttons with toast notification feedback (clipboard API with fallback)
+- **Next Action Card**: Prominent card at top of Summary view showing the single most important next step with reason and copy-ready prompt
+- **Hero Recommendation Copy Buttons**: Each recommendation in the Health Score hero now has a copy button with a full contextual prompt (not just "/sdd:X" commands)
+- **Pipeline Stage Popovers**: Click any pipeline stage to see popover with status, last run date, artifact count, stage-specific prompt with copy button, and "Filter by Stage" action
+- **Activity Feed Panel**: Scrollable feed in Summary view showing real-time pipeline activity entries with timestamps, stage names, and status icons
+- **JSONP Live Status Polling**: Loads `./live-status.js` every 5 seconds via `<script>` tag injection (works with `file://` protocol, no server needed)
+  - `window.__SDD_LIVE_UPDATE(data)` callback updates activity feed and pipeline indicators
+  - Live dot indicator: pulsing green (active), yellow (stale), hidden (no file)
+  - Stale detection: heartbeat >60s + status=running shows "Possibly stalled" warning
+  - Graceful degradation: silent no-op on 404, live dot hidden after 3 failures, race condition guard via timestamp comparison
+- **New reference**: `live-status-template.md` — JSONP schema, field reference, idle seed template, skill integration instructions
+- **SKILL.md v4.0.0**: New Step 9.5 "Generate Live Status Seed File" writes `dashboard/live-status.js` on dashboard generation
+- **New output**: `dashboard/live-status.js` (JSONP seed file for live activity feed)
+- **7 new CSS components**: `.toast`, `.copy-btn`, `.next-action-card`, `.prompt-block`, `.activity-panel`/`.activity-feed`, `.stage-popover`, `.live-dot`
+
 ## [1.7.0] - 2026-03-01
 
 ### Dashboard v4.0.0
