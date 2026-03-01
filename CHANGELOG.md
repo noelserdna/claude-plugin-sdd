@@ -5,6 +5,39 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-03-01
+
+### Added
+- **MCP Server** (`server/`): TypeScript server exposing the SDD traceability graph via Model Context Protocol
+  - 5 tools: `sdd_query` (text search with scoring), `sdd_impact` (BFS blast radius by depth), `sdd_context` (360° artifact view), `sdd_coverage` (gap analysis by domain/layer), `sdd_trace` (full chain traversal REQ→...→TEST with break detection)
+  - 7 resources via `sdd://` protocol: `pipeline/status`, `pipeline/stages`, `artifacts/{type}`, `artifacts/{type}/{id}`, `graph/schema`, `graph/stats`, `coverage/gaps`
+  - 2 workflow prompts: `analyze_impact` (pre-change workflow), `generate_status_report` (pipeline health)
+  - Next-step hints on every tool response (GitNexus pattern)
+  - Reads `dashboard/traceability-graph.json` with file watcher and graceful degradation
+  - Registered via `.mcp.json` at plugin root
+- **Context Augmentation Hook** (`hooks/sdd-augment-hook.js`): PreToolUse hook injecting SDD traceability context
+  - Intercepts: Grep, Glob, Read, Edit, Write
+  - Matches by file path (codeRefs), artifact ID patterns (regex), and symbols (code intelligence)
+  - Formats: traceability chain, coverage status, last commit, callers/callees/processes when code intelligence available
+  - Silent failure — never breaks tool calls
+- **Code Index Skill** (`skills/code-index/` v1.0.0): GitNexus bridge for deep code intelligence
+  - Modes: Full (GitNexus AST), Lite (regex, no call graph), Status, Refresh
+  - Maps GitNexus symbols to SDD artifacts via `Refs:` annotations and transitive inference (max depth 2, confidence ≥0.7)
+  - Enriches `traceability-graph.json` with `codeIntelligence` block (symbols, callGraph, processes, stats)
+  - Reference: `bridge-patterns.md` (mapping rules, confidence calculation, community→domain mapping)
+- **Graph Schema v4** (`graph-schema.md`): backward-compatible extension for code intelligence
+  - New block: `codeIntelligence` with `symbols[]`, `callGraph[]`, `processes[]`, `stats`
+  - New fields: `codeRefs[].inferred` (boolean), `codeRefs[].confidence` (0-1)
+  - New relationship type: `inferred-implements`
+  - Absent by default — all existing dashboards work without changes
+
+### Changed
+- **req-change**: New Step 8 "Code Intelligence Impact Analysis" — uses `sdd_impact` for symbol-level blast radius when MCP server available, with fallback to existing git log approach
+- **traceability-check**: New Step 5.5 "Code & Test Chain Verification" — validates codeRef/testRef existence, detects orphaned annotations and uncovered code paths
+- **reconcile**: New Phase 2 Step 5 "Code Intelligence Enrichment" — uses MCP server for scalable code scan instead of manual file-by-file reading
+- **dashboard**: Enhanced Step 5 with code intelligence — uses `codeIntelligence.symbols[]` for precise data when available, adds `inferred-implements` relationships
+- Plugin version bumped from 1.8.0 to 2.0.0
+
 ## [1.8.0] - 2026-03-01
 
 ### Dashboard v5 — Interactive Prompts & Live Status (Phase 1)
