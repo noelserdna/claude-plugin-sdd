@@ -1,5 +1,5 @@
 ---
-name: dashboard
+name: sdd-dashboard
 description: "Generates a visual HTML traceability dashboard from SDD pipeline artifacts.
   Scans all pipeline directories, extracts artifact IDs and cross-references,
   builds a structured JSON graph, and produces a self-contained HTML dashboard.
@@ -15,11 +15,44 @@ You are the **SDD Dashboard Generator**. Your job is to scan all SDD pipeline ar
 
 ## Relationship to Other Skills
 
-- **Complements** `traceability-check`: That skill produces a text report; this skill produces a visual, interactive HTML dashboard with the same underlying data.
+- **Complements** `sdd-traceability-check`: That skill produces a text report; this skill produces a visual, interactive HTML dashboard with the same underlying data.
 - **Reads** output from ALL pipeline stages: `requirements/`, `spec/`, `audits/`, `test/`, `plan/`, `task/`, `src/`, `tests/`.
 - **Reads** `pipeline-state.json` for stage status information.
 - **Writes** to `dashboard/` only (never modifies pipeline artifacts).
 - **Does NOT participate** in the linear pipeline chain — this is a utility skill.
+
+## Fast Path with generate.py
+
+A Python script `generate.py` ships alongside this skill and implements Steps 1-8 as a standalone executable. This enables a **two-tier** execution model:
+
+### Tier 1 — Fast Path (preferred)
+
+If `generate.py` exists relative to this skill file, Claude should:
+
+1. **Write `adoption-data.json`** (Step 2.5) — Claude parses onboarding/reconciliation markdown reports and writes `dashboard/adoption-data.json` with the structured adoption data. This is the only step that requires Claude's intelligence (regex + context-aware parsing of free-form markdown).
+2. **Execute generate.py**:
+   ```bash
+   python /path/to/generate.py --project . --output dashboard/
+   ```
+   This handles Steps 1-8 automatically: scanning artifacts, extracting definitions and references, scanning code/tests/commits, classifying requirements, and writing `traceability-graph.json`.
+3. **Continue at Step 9** — generate HTML from template + graph JSON.
+4. **Step 10** — open browser and report metrics.
+
+### Tier 2 — Manual Execution (fallback)
+
+If `generate.py` is not available (e.g., skill installed without the script), Claude executes Steps 1-8 manually using tools (Glob, Grep, Read, Bash) as described below.
+
+### CLI Reference
+
+```
+python generate.py [OPTIONS]
+
+Options:
+  --project DIR    Project root directory (default: current working directory)
+  --output DIR     Output directory (default: PROJECT/dashboard)
+```
+
+The script auto-detects the project name from `package.json` → `pipeline-state.json` → directory name.
 
 ## Output Artifacts
 
@@ -31,6 +64,8 @@ You are the **SDD Dashboard Generator**. Your job is to scan all SDD pipeline ar
 | `dashboard/live-status.js` | JSONP live status seed file for real-time activity feed |
 
 ## Process
+
+> **Fast Path**: If `generate.py` is available, Steps 1-8 are handled automatically. Claude only needs to write `adoption-data.json` (Step 2.5) before running the script, then skip to Step 9. See "Fast Path with generate.py" above.
 
 ### Step 1: Read Pipeline State
 
@@ -397,3 +432,4 @@ If there are broken references or orphans, list the top 5 of each with file loca
 - **JSON validity**: The output JSON must be valid and parseable. Escape special characters in titles.
 - **Idempotent**: Running the dashboard multiple times overwrites previous output without side effects.
 - **Output Language**: Match the user's language for the summary report. Technical terms and artifact IDs remain in English.
+- **Fast Path preferred**: When `generate.py` is available, prefer using it for Steps 1-8 instead of manual tool-based execution. This is faster and produces consistent output across projects.
