@@ -1,7 +1,7 @@
 {
   "name": "sdd",
   "description": "Specification-Driven Development pipeline based on SWEBOK v4. Complete requirements-to-code pipeline with 19 skills, 8 agents, automated guardrails, and traceability enforcement. Supports greenfield and brownfield projects.",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "author": {
     "name": "Andrés",
     "url": "https://github.com/noelserdna"
