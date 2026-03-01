@@ -5,6 +5,41 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-03-01
+
+### Added
+- **4 Onboarding Skills** for adopting SDD in existing projects (brownfield, drift, migration scenarios)
+  - **`onboarding`** (v1.0.0): Project detector and SDD adoption planner
+    - 7-phase diagnostic: environment check, SDD artifact scan, non-SDD doc scan, code/test analysis, scenario classification, health score estimation, action plan generation
+    - 8 scenarios: greenfield, brownfield bare, SDD drift, partial SDD, brownfield with docs, tests-as-spec, multi-team, fork/migration
+    - Health score 0-100 with per-dimension breakdown (requirements, specs, tests, architecture, traceability, code quality, pipeline state)
+    - Modes: default (full), `--quick`, `--reassess`
+    - Output: `onboarding/ONBOARDING-REPORT.md`
+    - References: `detection-matrix.md` (25+ signals, weighted classification matrix), `action-plan-templates.md` (8 scenario templates with effort/health projections)
+  - **`reverse-engineer`** (v1.0.0): Code to SDD artifact generator
+    - 10-phase process with 2 user checkpoints (after inventory/analysis, after artifact generation)
+    - Generates complete SDD artifacts: requirements (EARS syntax), specs, test plan, architecture plan, retroactive tasks, findings report
+    - Findings taxonomy with 7 markers: `[DEAD-CODE]`, `[TECH-DEBT]`, `[WORKAROUND]`, `[INFRASTRUCTURE]`, `[ORPHAN]`, `[INFERRED]`, `[IMPLICIT-RULE]`
+    - Language-specific analysis patterns: TypeScript, Python, Rust, Go, Java
+    - Modes: default (full), `--scope=paths`, `--inventory-only`, `--continue`, `--findings-only`
+    - Output: `requirements/`, `spec/`, `test/`, `plan/`, `task/`, `findings/`, `reverse-engineering/`
+    - References: `code-analysis-patterns.md`, `requirement-extraction-heuristics.md`, `findings-taxonomy.md`, `retroactive-task-template.md`
+  - **`reconcile`** (v1.0.0): Spec-code drift detection and alignment
+    - 8-phase process: context loading, code scan, spec-code comparison, divergence classification, reconciliation plan, user review, apply changes, pipeline state update
+    - 6 divergence types: `NEW_FUNCTIONALITY` (auto), `REMOVED_FEATURE` (auto), `BEHAVIORAL_CHANGE` (ask), `REFACTORING` (auto), `BUG_OR_DEFECT` (ask), `AMBIGUOUS` (ask)
+    - Automatic resolution for safe types; user decision for ambiguous cases
+    - Modes: default (full), `--dry-run`, `--scope=paths`, `--code-wins`
+    - Output: `reconciliation/RECONCILIATION-REPORT.md` + updated specs/requirements
+    - References: `divergence-classification.md`, `reconciliation-strategies.md`, `reconciliation-report-template.md`
+  - **`import`** (v1.0.0): External documentation to SDD format converter
+    - 7-phase process: format detection, parse input, mapping preview, user confirmation, generate SDD artifacts, quality check, pipeline state update
+    - 6 formats supported: Jira (JSON/CSV), OpenAPI/Swagger (YAML/JSON), Markdown, Notion (markdown/CSV), CSV, Excel (.xlsx)
+    - Auto-detect format with content inspection fallback
+    - EARS syntax conversion from user stories, imperative statements, conditionals, API descriptions
+    - Modes: default (auto-detect), `--format=TYPE`, `--target=requirements|specs|both`, `--merge`
+    - Output: `requirements/`, `spec/`, `import/IMPORT-REPORT.md`
+    - References: `format-parsers.md`, `mapping-rules.md`, `import-report-template.md`
+
 ## [1.5.0] - 2026-02-28
 
 ### Added

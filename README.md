@@ -2,7 +2,7 @@
 
 > **[Leer en español](README.es.md)**
 
-Specification-Driven Development pipeline based on SWEBOK v4. A complete requirements-to-code pipeline with 15 skills, automated guardrails, and traceability enforcement.
+Specification-Driven Development pipeline based on SWEBOK v4. A complete requirements-to-code pipeline with 19 skills, automated guardrails, and traceability enforcement. Supports both greenfield and brownfield projects.
 
 ## Prerequisites
 
@@ -86,6 +86,15 @@ task-implementer  ->  src/, tests/, git commits
 | Task Implementer | `/sdd:task-implementer` | Implement code with TDD, atomic commits |
 | Security Auditor | `/sdd:security-auditor` | OWASP/CWE security posture audit (lateral) |
 | Req Change | `/sdd:req-change` | Manage requirement changes with pipeline cascade (lateral) |
+
+### Onboarding Skills (4)
+
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| Onboarding | `/sdd:onboarding` | Diagnose project state and generate SDD adoption plan |
+| Reverse Engineer | `/sdd:reverse-engineer` | Generate SDD artifacts from existing code (brownfield) |
+| Reconcile | `/sdd:reconcile` | Detect and resolve spec-code drift |
+| Import | `/sdd:import` | Import external docs (Jira, OpenAPI, Markdown, Notion, CSV, Excel) |
 
 ### Utility Skills (5)
 

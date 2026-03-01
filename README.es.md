@@ -1,6 +1,6 @@
 # SDD Plugin para Claude Code
 
-Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 15 skills, guardrails automatizados y trazabilidad obligatoria.
+Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 19 skills, guardrails automatizados y trazabilidad obligatoria. Soporta proyectos greenfield y brownfield.
 
 ## Requisitos Previos
 
@@ -84,6 +84,15 @@ task-implementer  ->  src/, tests/, git commits
 | Task Implementer | `/sdd:task-implementer` | Implementar codigo con TDD y commits atomicos |
 | Security Auditor | `/sdd:security-auditor` | Auditoria de postura de seguridad OWASP/CWE (lateral) |
 | Req Change | `/sdd:req-change` | Gestionar cambios de requisitos con cascade del pipeline (lateral) |
+
+### Skills de Onboarding (4)
+
+| Skill | Comando | Proposito |
+|-------|---------|-----------|
+| Onboarding | `/sdd:onboarding` | Diagnosticar estado del proyecto y generar plan de adopcion SDD |
+| Reverse Engineer | `/sdd:reverse-engineer` | Generar artefactos SDD desde codigo existente (brownfield) |
+| Reconcile | `/sdd:reconcile` | Detectar y resolver drift entre specs y codigo |
+| Import | `/sdd:import` | Importar docs externos (Jira, OpenAPI, Markdown, Notion, CSV, Excel) |
 
 ### Skills de Utilidad (5)
 
