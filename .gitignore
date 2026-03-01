@@ -9,3 +9,8 @@ dashboard-*.png
 
 # Playwright MCP cache
 .playwright-mcp/
+
+# MCP Server build artifacts
+server/node_modules/
+server/dist/
+server/package-lock.json
