@@ -1,165 +1,247 @@
 # SDD Plugin para Claude Code
 
-Pipeline de Desarrollo Dirigido por Especificaciones (Specification-Driven Development) basado en SWEBOK v4. Un pipeline completo de requisitos a codigo con 19 skills, guardrails automatizados y trazabilidad obligatoria. Soporta proyectos greenfield y brownfield.
+> **[Read in English](README.md)**
 
-## Requisitos Previos
+Un plugin de [Claude Code](https://docs.anthropic.com/en/docs/claude-code) que transforma requisitos en codigo de produccion a traves de un pipeline estructurado y auditable. Basado en SWEBOK v4. Funciona con proyectos nuevos y existentes.
 
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) instalado y configurado
+**19 skills** &middot; **8 agentes** &middot; **4 hooks** &middot; **Trazabilidad completa**
+
+## Como Funciona
+
+El plugin te guia a traves de un pipeline lineal — cada paso produce artefactos que alimentan el siguiente:
+
+```mermaid
+graph LR
+    R["Requirements
+    Engineer"] --> S["Specifications
+    Engineer"]
+    S --> A["Spec
+    Auditor"]
+    A --> T["Test
+    Planner"]
+    T --> P["Plan
+    Architect"]
+    P --> G["Task
+    Generator"]
+    G --> I["Task
+    Implementer"]
+
+    style R fill:#4a9eff,stroke:#357abd,color:#fff
+    style S fill:#4a9eff,stroke:#357abd,color:#fff
+    style A fill:#f5a623,stroke:#d4891c,color:#fff
+    style T fill:#4a9eff,stroke:#357abd,color:#fff
+    style P fill:#4a9eff,stroke:#357abd,color:#fff
+    style G fill:#4a9eff,stroke:#357abd,color:#fff
+    style I fill:#7ed321,stroke:#5ca518,color:#fff
+```
+
+Cada artefacto es trazable de extremo a extremo:
+
+```mermaid
+graph LR
+    REQ["REQ"] --- UC["UC"] --- WF["WF"] --- API["API"] --- BDD["BDD"] --- INV["INV"] --- ADR["ADR"] --- TASK["TASK"] --- COMMIT["COMMIT"] --- CODE["CODE"] --- TEST["TEST"]
+
+    style REQ fill:#4a9eff,stroke:#357abd,color:#fff
+    style UC fill:#4a9eff,stroke:#357abd,color:#fff
+    style WF fill:#4a9eff,stroke:#357abd,color:#fff
+    style API fill:#4a9eff,stroke:#357abd,color:#fff
+    style BDD fill:#7ed321,stroke:#5ca518,color:#fff
+    style INV fill:#7ed321,stroke:#5ca518,color:#fff
+    style ADR fill:#f5a623,stroke:#d4891c,color:#fff
+    style TASK fill:#f5a623,stroke:#d4891c,color:#fff
+    style COMMIT fill:#9b59b6,stroke:#7d3c98,color:#fff
+    style CODE fill:#9b59b6,stroke:#7d3c98,color:#fff
+    style TEST fill:#9b59b6,stroke:#7d3c98,color:#fff
+```
 
 ## Instalacion
 
-### Paso 1: Habilitar el Plugin Marketplace
-
-Antes de instalar cualquier plugin, necesitas habilitar el marketplace en Claude Code. Ejecuta este comando una vez en tu terminal:
-
 ```bash
+# 1. Habilitar marketplace (una vez)
 claude plugin marketplace
-```
 
-Esto abre el marketplace de plugins y habilita el comando `/plugin` en tu CLI.
-
-### Paso 2: Instalar el Plugin
-
-Dentro de una sesion de Claude Code, ejecuta:
-
-```
+# 2. Instalar (dentro de Claude Code)
 /plugin install github:noelserdna/claude-plugin-sdd
-```
 
-### Paso 3: Verificar la Instalacion
-
-Despues de la instalacion, los skills y hooks del plugin estaran disponibles. Puedes verificarlo ejecutando:
-
-```
+# 3. Verificar
 /sdd:pipeline-status
 ```
 
-Si el comando es reconocido, el plugin esta instalado correctamente.
-
 ## Inicio Rapido
 
+### Proyecto nuevo (greenfield)
+
 ```
-/sdd:setup                       # Inicializar pipeline en tu proyecto
+/sdd:setup                       # Inicializar pipeline
 /sdd:requirements-engineer       # Elicitar requisitos
-/sdd:specifications-engineer     # Transformar requisitos en especificaciones
-/sdd:spec-auditor                # Auditar specs por defectos
-/sdd:test-planner                # Generar estrategia de testing
-/sdd:plan-architect              # Generar plan de implementacion
-/sdd:task-generator              # Generar tareas atomicas
-/sdd:task-implementer            # Implementar codigo desde tareas
+/sdd:specifications-engineer     # Generar especificaciones
+/sdd:spec-auditor                # Auditar y corregir specs
+/sdd:test-planner                # Planificar testing
+/sdd:plan-architect              # Disenar arquitectura
+/sdd:task-generator              # Crear tareas atomicas
+/sdd:task-implementer            # Escribir codigo + tests
 ```
 
-## Pipeline
+### Proyecto existente (brownfield)
 
 ```
-requirements-engineer  ->  requirements/REQUIREMENTS.md
-        |
-specifications-engineer  ->  spec/
-        |
-spec-auditor (Audit)  ->  audits/AUDIT-BASELINE.md
-        |
-spec-auditor (Fix)  ->  spec/ corregido
-        |
-test-planner  ->  test/TEST-PLAN.md, TEST-MATRIX-*.md, PERF-SCENARIOS.md
-        |
-plan-architect  ->  plan/ (archivos FASE, PLAN.md, ARCHITECTURE.md)
-        |
-task-generator  ->  task/TASK-FASE-*.md
-        |
-task-implementer  ->  src/, tests/, git commits
+/sdd:onboarding                  # Diagnosticar proyecto → plan de adopcion
+/sdd:import docs/api.yaml        # Importar docs existentes (OpenAPI, Jira, etc.)
+/sdd:reverse-engineer            # Extraer specs del codigo
+/sdd:reconcile                   # Alinear specs con codigo
 ```
 
-## Referencia de Skills
+## Que Hace Cada Skill
 
-### Skills del Pipeline (9)
+### Pipeline — de la idea al codigo
 
-| Skill | Comando | Proposito |
-|-------|---------|-----------|
-| Requirements Engineer | `/sdd:requirements-engineer` | Elicitar, auditar y escribir requisitos (SWEBOK Ch01) |
-| Specifications Engineer | `/sdd:specifications-engineer` | Transformar requisitos en especificaciones formales |
-| Spec Auditor | `/sdd:spec-auditor` | Auditar specs por defectos; modo fix para correcciones |
-| Test Planner | `/sdd:test-planner` | Generar estrategia de testing, matrices y escenarios de rendimiento (SWEBOK Ch04) |
-| Plan Architect | `/sdd:plan-architect` | Generar archivos FASE y planes de implementacion |
-| Task Generator | `/sdd:task-generator` | Descomponer FASEs en tareas atomicas y reversibles |
-| Task Implementer | `/sdd:task-implementer` | Implementar codigo con TDD y commits atomicos |
-| Security Auditor | `/sdd:security-auditor` | Auditoria de postura de seguridad OWASP/CWE (lateral) |
-| Req Change | `/sdd:req-change` | Gestionar cambios de requisitos con cascade del pipeline (lateral) |
+```mermaid
+graph TD
+    subgraph Pipeline
+        RE["<b>Requirements Engineer</b><br/>Elicitar y escribir requisitos<br/><i>SWEBOK Ch01 · Sintaxis EARS</i>"]
+        SE["<b>Specifications Engineer</b><br/>Dominio, casos de uso, contratos,<br/>workflows, NFRs, ADRs"]
+        SA["<b>Spec Auditor</b><br/>Encontrar y corregir defectos<br/><i>Modo Audit + Modo Fix</i>"]
+        TP["<b>Test Planner</b><br/>Plan de testing, matrices,<br/>escenarios de rendimiento · <i>SWEBOK Ch04</i>"]
+        PA["<b>Plan Architect</b><br/>Archivos FASE, arquitectura,<br/>plan de implementacion · <i>Modelo C4</i>"]
+        TG["<b>Task Generator</b><br/>Tareas atomicas y reversibles<br/><i>1 tarea = 1 commit</i>"]
+        TI["<b>Task Implementer</b><br/>TDD, codigo, tests,<br/>commits atomicos con SHA"]
+    end
 
-### Skills de Onboarding (4)
+    RE --> SE --> SA --> TP --> PA --> TG --> TI
 
-| Skill | Comando | Proposito |
-|-------|---------|-----------|
-| Onboarding | `/sdd:onboarding` | Diagnosticar estado del proyecto y generar plan de adopcion SDD |
-| Reverse Engineer | `/sdd:reverse-engineer` | Generar artefactos SDD desde codigo existente (brownfield) |
-| Reconcile | `/sdd:reconcile` | Detectar y resolver drift entre specs y codigo |
-| Import | `/sdd:import` | Importar docs externos (Jira, OpenAPI, Markdown, Notion, CSV, Excel) |
+    style RE fill:#e8f4fd,stroke:#4a9eff
+    style SE fill:#e8f4fd,stroke:#4a9eff
+    style SA fill:#fff3e0,stroke:#f5a623
+    style TP fill:#e8f4fd,stroke:#4a9eff
+    style PA fill:#e8f4fd,stroke:#4a9eff
+    style TG fill:#e8f4fd,stroke:#4a9eff
+    style TI fill:#e8f8e8,stroke:#7ed321
+```
 
-### Skills de Utilidad (5)
+### Onboarding — adopta SDD en cualquier proyecto
 
-| Skill | Comando | Proposito |
-|-------|---------|-----------|
-| Pipeline Status | `/sdd:pipeline-status` | Mostrar estado del pipeline, staleness y siguiente accion |
-| Traceability Check | `/sdd:traceability-check` | Verificar cadena REQ-UC-WF-API-BDD-INV-ADR |
-| Dashboard | `/sdd:dashboard` | Generar dashboard HTML visual de trazabilidad |
-| Notion Sync | `/sdd:sync-notion` | Sincronizacion bidireccional con bases de datos Notion |
-| Session Summary | `/sdd:session-summary` | Resumir decisiones de sesion y progreso |
+```mermaid
+graph TD
+    ON["<b>Onboarding</b><br/>Escanear proyecto → clasificar<br/>escenario → plan de adopcion"]
 
-### Skill de Setup (1)
+    ON -->|brownfield| RV["<b>Reverse Engineer</b><br/>Codigo → requisitos,<br/>specs, tareas, hallazgos"]
+    ON -->|tiene docs| IM["<b>Import</b><br/>Jira, OpenAPI, Markdown,<br/>Notion, CSV, Excel → SDD"]
+    ON -->|drift| RC["<b>Reconcile</b><br/>Detectar divergencias,<br/>auto-resolver o preguntar"]
 
-| Skill | Comando | Proposito |
-|-------|---------|-----------|
-| Setup | `/sdd:setup` | Inicializar pipeline-state.json en el proyecto |
+    IM --> RV
+    RV --> RC
+
+    style ON fill:#f3e5f5,stroke:#9b59b6
+    style RV fill:#f3e5f5,stroke:#9b59b6
+    style IM fill:#f3e5f5,stroke:#9b59b6
+    style RC fill:#f3e5f5,stroke:#9b59b6
+```
+
+| Skill | Comando | Que hace |
+|-------|---------|----------|
+| Onboarding | `/sdd:onboarding` | Diagnostica el estado del proyecto (8 escenarios), genera plan de adopcion |
+| Reverse Engineer | `/sdd:reverse-engineer` | Analiza codigo para generar todos los artefactos SDD + informe de hallazgos |
+| Reconcile | `/sdd:reconcile` | Detecta drift specs-codigo, clasifica divergencias, reconcilia |
+| Import | `/sdd:import` | Convierte docs externos a formato SDD (6 formatos soportados) |
+
+### Laterales — usar en cualquier momento
+
+| Skill | Comando | Que hace |
+|-------|---------|----------|
+| Security Auditor | `/sdd:security-auditor` | Auditoria de seguridad OWASP/CWE |
+| Req Change | `/sdd:req-change` | Gestionar cambios con cascade del pipeline (ISO 14764) |
+
+### Utilidades
+
+| Skill | Comando | Que hace |
+|-------|---------|----------|
+| Pipeline Status | `/sdd:pipeline-status` | Estado actual, deteccion de staleness, siguiente accion |
+| Traceability Check | `/sdd:traceability-check` | Verificar cadena completa, encontrar huerfanos |
+| Dashboard | `/sdd:dashboard` | Dashboard HTML interactivo de trazabilidad |
+| Notion Sync | `/sdd:sync-notion` | Sincronizacion bidireccional con Notion |
+| Session Summary | `/sdd:session-summary` | Resumir decisiones y progreso |
+| Setup | `/sdd:setup` | Inicializar `pipeline-state.json` |
 
 ## Automatizacion
 
-El plugin instala automaticamente:
+El plugin ejecuta guardrails automaticamente — no requiere configuracion manual.
 
-### Hooks
+```mermaid
+graph LR
+    subgraph Hooks
+        H1["H1: Inicio de Sesion<br/><i>Inyecta estado del pipeline</i>"]
+        H2["H2: Guardia Upstream<br/><i>Bloquea ediciones invalidas</i>"]
+        H3["H3: Actualizador<br/><i>Rastrea progreso auto.</i>"]
+        H4["H4: Fin de Sesion<br/><i>Verificacion de consistencia</i>"]
+    end
 
-| Hook | Evento | Proposito |
-|------|--------|-----------|
-| H1 | PreToolUse (SessionStart) | Inyecta estado del pipeline en el contexto de sesion |
-| H2 | PreToolUse (Edit/Write) | Bloquea skills downstream de modificar artefactos upstream |
-| H3 | PostToolUse (Write) | Auto-actualiza pipeline-state.json al escribir artefactos |
-| H4 | Stop | Verifica consistencia del pipeline al cerrar sesion |
+    subgraph Agentes
+        A1["A1: Enforcer de<br/>Constitucion"]
+        A2["A2: Cross-Auditor"]
+        A3["A3: Context Keeper"]
+        A4["A4-A8: Vigilantes<br/><i>Requisitos, compliance,<br/>cobertura, links, salud</i>"]
+    end
 
-### Agentes
+    style H1 fill:#e8f4fd,stroke:#4a9eff
+    style H2 fill:#fff3e0,stroke:#f5a623
+    style H3 fill:#e8f4fd,stroke:#4a9eff
+    style H4 fill:#e8f4fd,stroke:#4a9eff
+    style A1 fill:#f3e5f5,stroke:#9b59b6
+    style A2 fill:#f3e5f5,stroke:#9b59b6
+    style A3 fill:#f3e5f5,stroke:#9b59b6
+    style A4 fill:#f3e5f5,stroke:#9b59b6
+```
 
-| Agente | Modelo | Proposito |
-|--------|--------|-----------|
-| Constitution Enforcer (A1) | haiku | Valida operaciones contra los 11 articulos de la Constitucion SDD |
-| Cross-Auditor (A2) | sonnet | Cruza definiciones de skills buscando inconsistencias |
-| Context Keeper (A3) | haiku | Mantiene contexto informal del proyecto |
-| Requirements Watcher (A4) | haiku | Detecta cambios en requisitos desde el ultimo dashboard |
-| Spec Compliance Checker (A5) | sonnet | Verifica que src/ implementa lo que spec/ declara |
-| Test Coverage Monitor (A6) | haiku | Calcula % de REQs con cobertura BDD/test |
-| Traceability Validator (A7) | haiku | Deteccion de links sospechosos (inspirado en IBM DOORS) |
-| Pipeline Health Monitor (A8) | haiku | Score de salud 0-100 con recomendaciones accionables |
+**Hooks** se ejecutan en cada sesion — inyectan contexto, protegen artefactos, rastrean estado.
+**Agentes** son delegados por Claude o invocados por ti — auditan, validan, monitorean.
 
-## Cadena de Trazabilidad
+## Estructura del Proyecto
 
-Cada artefacto se traza a traves de la cadena completa:
+Despues de ejecutar el pipeline, tu proyecto contendra:
 
 ```
-REQ <> UC <> WF <> API <> BDD <> INV <> ADR <> RN
+tu-proyecto/
+├── pipeline-state.json          # Seguimiento del progreso
+├── requirements/
+│   └── REQUIREMENTS.md          # Requisitos en sintaxis EARS
+├── spec/
+│   ├── domain.md                # Modelo de dominio
+│   ├── use-cases.md             # Casos de uso
+│   ├── workflows.md             # Workflows y maquinas de estado
+│   ├── contracts.md             # Contratos API
+│   ├── nfr.md                   # Requisitos no funcionales
+│   └── adr/                     # Registros de decisiones
+├── audits/
+│   └── AUDIT-BASELINE.md        # Resultados de auditoria
+├── test/
+│   ├── TEST-PLAN.md             # Estrategia de testing
+│   └── TEST-MATRIX-*.md         # Matrices de testing
+├── plan/
+│   ├── ARCHITECTURE.md          # Arquitectura C4
+│   ├── PLAN.md                  # Plan de implementacion
+│   └── fases/FASE-*.md          # Desglose por fases
+├── task/
+│   └── TASK-FASE-*.md           # Tareas atomicas (1 tarea = 1 commit)
+├── src/                         # Codigo fuente generado
+├── tests/                       # Tests generados
+└── dashboard/
+    └── index.html               # Dashboard de trazabilidad
 ```
 
 ## Convenciones Clave
 
-- **Sintaxis EARS** para requisitos: `WHEN <trigger> THE <system> SHALL <behavior>`
-- **1 tarea = 1 commit** usando Conventional Commits con trailers `Refs:` y `Task:`
-- **Auditoria por baseline**: la primera auditoria crea baseline; las siguientes solo reportan hallazgos nuevos o regresiones
-- **Clarificacion primero**: las skills nunca asumen, siempre preguntan con opciones estructuradas
+| Convencion | Descripcion |
+|-----------|-------------|
+| **Sintaxis EARS** | Los requisitos usan `WHEN <trigger> THE <system> SHALL <behavior>` |
+| **1 tarea = 1 commit** | Cada tarea produce exactamente un commit con trailers `Refs:` y `Task:` |
+| **Clarificacion primero** | Los skills nunca asumen — preguntan con opciones estructuradas |
+| **Auditoria por baseline** | La primera auditoria crea baseline; las siguientes solo reportan hallazgos nuevos |
 
-## Estandares Referenciados
+## Estandares
 
-- SWEBOK v4
-- OWASP ASVS v4
-- CWE
-- IEEE 830
-- ISO 14764
-- Modelo C4
-- Gherkin/BDD
+Construido sobre estandares establecidos de ingenieria de software:
+
+SWEBOK v4 &middot; OWASP ASVS v4 &middot; CWE &middot; IEEE 830 &middot; ISO 14764 &middot; Modelo C4 &middot; Gherkin/BDD
 
 ## Licencia
 
