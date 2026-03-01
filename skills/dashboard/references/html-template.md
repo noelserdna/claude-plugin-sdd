@@ -1,4 +1,4 @@
-# HTML Dashboard Template v4
+# HTML Dashboard Template v5
 
 Self-contained HTML template for the SDD Comprehension Dashboard. The skill replaces `{{DATA_JSON}}` with the serialized `traceability-graph.json` content (v3 schema).
 
@@ -355,6 +355,66 @@ tr.row-none td:last-child{color:var(--red)}
 .empty p{font-size:14px}
 .empty-section{text-align:center;padding:30px;color:var(--text2);font-size:13px}
 
+/* === INTERACTIVE PROMPTS & LIVE STATUS === */
+
+/* Toast notification */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);color:var(--text);padding:10px 18px;border-radius:var(--radius);font-size:13px;z-index:400;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(16px);transition:opacity .2s,transform .2s;pointer-events:none;display:flex;align-items:center;gap:8px;border:1px solid var(--border)}
+.toast.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--accent)}
+
+/* Copy button */
+.copy-btn{background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text2);padding:3px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;vertical-align:middle}
+.copy-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--accent)}
+.copy-btn::before{content:'\2398';font-size:13px}
+.copy-btn.copied{border-color:var(--green);color:var(--green)}
+.copy-btn.copied::before{content:'\2713'}
+
+/* Next Action card */
+.next-action-card{background:var(--surface);box-shadow:var(--shadow-md);border:none;border-radius:var(--radius);padding:20px;margin-bottom:16px;border-left:3px solid var(--accent);animation:fadeUp .3s ease backwards}
+.next-action-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.next-action-card .next-reason{font-size:13px;color:var(--text2);margin-bottom:12px}
+.next-action-card .prompt-block{margin:0}
+
+/* Prompt block */
+.prompt-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--text);position:relative;white-space:pre-wrap;word-break:break-word}
+.prompt-block .copy-btn{position:absolute;top:8px;right:8px}
+
+/* Activity feed panel */
+.activity-panel{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);padding:16px;margin-top:16px}
+.activity-panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.activity-feed{max-height:240px;overflow-y:auto}
+.activity-entry{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.activity-entry:last-child{border-bottom:none}
+.activity-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:2px}
+.activity-icon.running{background:#2e2a10;color:var(--yellow)}
+.activity-icon.done{background:#162e23;color:var(--green)}
+.activity-icon.error{background:#2e1616;color:var(--red)}
+.activity-icon.info{background:var(--surface2);color:var(--text2)}
+.activity-body{flex:1}
+.activity-stage{font-weight:600;color:var(--text)}
+.activity-msg{color:var(--text2)}
+.activity-time{font-size:10px;color:var(--text3);white-space:nowrap;margin-top:2px}
+.activity-empty{text-align:center;padding:24px;color:var(--text2);font-size:13px}
+
+/* Stage popover */
+.stage-popover{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;min-width:300px;max-width:400px;z-index:150;box-shadow:var(--shadow-lg);display:none;text-align:left}
+.stage-popover.open{display:block}
+.stage-popover::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:var(--surface2);border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.stage-popover-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.stage-popover-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.stage-popover-info{font-size:12px;color:var(--text2);margin-bottom:10px}
+.stage-popover-actions{display:flex;gap:8px;margin-top:10px}
+.stage-popover-filter{font-size:11px;padding:4px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;color:var(--text2);cursor:pointer}
+.stage-popover-filter:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* Live dot */
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:livePulse 2s ease-in-out infinite}
+.live-dot.stale{background:var(--yellow);animation:none}
+.live-dot.off{display:none}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.3}}
+
 /* Responsive */
 @media(max-width:768px){
   .pipeline{flex-wrap:wrap}
@@ -366,13 +426,16 @@ tr.row-none td:last-child{color:var(--red)}
   .summary-card:nth-child(2){grid-row:auto;grid-column:auto}
   .detail-panel{width:100%}
   .class-grid{grid-template-columns:1fr}
+  .stage-popover{min-width:250px;left:0;transform:none}
+  .stage-popover::before{left:20%}
+  .toast{left:16px;right:16px;bottom:16px}
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1><span>SDD</span> Dashboard <span class="header-version">v4</span></h1>
+  <h1><span>SDD</span> Dashboard <span class="header-version">v5</span></h1>
   <div class="header-meta">
     <span id="hdr-project"></span> &middot; <span id="hdr-time"></span>
     <a href="guide.html" class="header-guide" title="System documentation and dashboard guide">Guide</a>
@@ -519,6 +582,103 @@ tr.row-none td:last-child{color:var(--red)}
   };
   function humanLabel(abbr) { return LABELS[abbr] || abbr; }
 
+  // --- Contextual Prompt Generation ---
+  var STAGE_ORDER = ["requirements-engineer","specifications-engineer","spec-auditor","test-planner","plan-architect","task-generator","task-implementer"];
+  var STAGE_LABELS = {
+    "requirements-engineer":"Ingenieria de Requisitos","specifications-engineer":"Ingenieria de Especificaciones",
+    "spec-auditor":"Auditor de Especificaciones","test-planner":"Planificador de Tests",
+    "plan-architect":"Arquitecto de Plan","task-generator":"Generador de Tareas","task-implementer":"Implementador de Tareas"
+  };
+
+  function getStagePrompt(stageName, stageStatus) {
+    var stCov = (DATA.statistics || {}).traceabilityCoverage || {};
+    if (stageStatus === "stale") {
+      return "El stage " + stageName + " esta stale porque sus inputs cambiaron. Re-ejecuta el skill para actualizar los artefactos de salida.\n\nEjecuta /sdd:" + stageName;
+    }
+    if (stageStatus === "running") {
+      return "El stage " + stageName + " esta en ejecucion. Espera a que termine.";
+    }
+    if (stageStatus === "done") {
+      return "El stage " + stageName + " esta completado. Puedes avanzar al siguiente stage.";
+    }
+
+    var ucGap = stCov.reqsWithUCs ? ((stCov.reqsWithUCs.total || 0) - (stCov.reqsWithUCs.count || 0)) : 0;
+    var bddGap = stCov.reqsWithBDD ? ((stCov.reqsWithBDD.total || 0) - (stCov.reqsWithBDD.count || 0)) : 0;
+    var taskGap = stCov.reqsWithTasks ? ((stCov.reqsWithTasks.total || 0) - (stCov.reqsWithTasks.count || 0)) : 0;
+
+    switch (stageName) {
+      case "requirements-engineer":
+        return "Necesito definir los requisitos del proyecto. Captura requisitos funcionales y no funcionales usando sintaxis EARS.\n\nEjecuta /sdd:requirements-engineer";
+      case "specifications-engineer":
+        var msg = "Necesito transformar los requisitos en especificaciones formales (Use Cases, Workflows, API Contracts, BDD Scenarios, Invariants, ADRs).";
+        if (ucGap > 0) msg += "\n\nHay " + ucGap + " requisitos sin Use Cases.";
+        return msg + "\n\nEjecuta /sdd:specifications-engineer";
+      case "spec-auditor":
+        return "Necesito auditar las especificaciones para detectar ambiguedades, silencios peligrosos, contradicciones e invariantes implicitos.\n\nEjecuta /sdd:spec-auditor";
+      case "test-planner":
+        var tmsg = "Necesito generar el plan de testing (test matrix, BDD scenarios, performance scenarios).";
+        if (bddGap > 0) tmsg += "\n\nHay " + bddGap + " requisitos sin cobertura BDD.";
+        return tmsg + "\n\nEjecuta /sdd:test-planner";
+      case "plan-architect":
+        return "Necesito disenar el plan de implementacion: FASEs, arquitectura y mapeo spec-to-phase.\n\nEjecuta /sdd:plan-architect";
+      case "task-generator":
+        var gmsg = "Necesito descomponer las FASEs en tareas atomicas con commits convencionales y trazabilidad.";
+        if (taskGap > 0) gmsg += "\n\nHay " + taskGap + " requisitos sin tareas.";
+        return gmsg + "\n\nEjecuta /sdd:task-generator";
+      case "task-implementer":
+        return "Necesito implementar las tareas: desarrollo test-first, commits atomicos, verificacion de trazabilidad.\n\nEjecuta /sdd:task-implementer";
+      default:
+        return "Ejecuta /sdd:" + stageName;
+    }
+  }
+
+  function getNextAction() {
+    var pipeline = DATA.pipeline || {};
+    var stages = pipeline.stages || [];
+    var stCov = (DATA.statistics || {}).traceabilityCoverage || {};
+
+    // Priority 1: stale stages
+    for (var i = 0; i < STAGE_ORDER.length; i++) {
+      var m = null;
+      for (var si = 0; si < stages.length; si++) { if (stages[si].name === STAGE_ORDER[i]) { m = stages[si]; break; } }
+      if (m && m.status === "stale") {
+        return { stage: STAGE_ORDER[i], status: "stale", reason: "Stage stale — sus inputs cambiaron", prompt: getStagePrompt(STAGE_ORDER[i], "stale") };
+      }
+    }
+
+    // Priority 2: first pending stage (if previous is done)
+    for (var j = 0; j < STAGE_ORDER.length; j++) {
+      var m2 = null;
+      for (var sj = 0; sj < stages.length; sj++) { if (stages[sj].name === STAGE_ORDER[j]) { m2 = stages[sj]; break; } }
+      if (!m2 || m2.status === "pending" || m2.status === "unknown") {
+        if (j === 0) {
+          return { stage: STAGE_ORDER[j], status: "pending", reason: "Primer stage del pipeline", prompt: getStagePrompt(STAGE_ORDER[j], "pending") };
+        }
+        var prev = null;
+        for (var sp = 0; sp < stages.length; sp++) { if (stages[sp].name === STAGE_ORDER[j-1]) { prev = stages[sp]; break; } }
+        if (prev && prev.status === "done") {
+          var reason = "Siguiente stage pendiente en el pipeline";
+          var ucInfo = stCov.reqsWithUCs || {};
+          var bddInfo = stCov.reqsWithBDD || {};
+          if (STAGE_ORDER[j] === "specifications-engineer" && ucInfo.total && ucInfo.count < ucInfo.total) {
+            reason = (ucInfo.total - ucInfo.count) + " requisitos sin Use Cases";
+          } else if (STAGE_ORDER[j] === "test-planner" && bddInfo.total && bddInfo.count < bddInfo.total) {
+            reason = (bddInfo.total - bddInfo.count) + " requisitos sin cobertura BDD";
+          }
+          return { stage: STAGE_ORDER[j], status: "pending", reason: reason, prompt: getStagePrompt(STAGE_ORDER[j], "pending") };
+        }
+      }
+    }
+
+    // Priority 3: coverage gaps
+    var ucGap = stCov.reqsWithUCs ? ((stCov.reqsWithUCs.total || 0) - (stCov.reqsWithUCs.count || 0)) : 0;
+    if (ucGap > 0) {
+      return { stage: "specifications-engineer", status: "gap", reason: ucGap + " requisitos sin Use Cases", prompt: getStagePrompt("specifications-engineer", "pending") };
+    }
+
+    return { stage: null, status: "ok", reason: "Pipeline completo. Todo al dia.", prompt: "El pipeline SDD esta completo y saludable." };
+  }
+
   // --- Health Score ---
   var TARGETS = { ucs: 90, bdd: 70, tasks: 80, code: 60, tests: 50 };
   function computeHealthScore(cov) {
@@ -552,22 +712,22 @@ tr.row-none td:last-child{color:var(--red)}
     var uc = c.reqsWithUCs || {};
     if ((uc.percentage || 0) < TARGETS.ucs) {
       var gap = (uc.total || 0) - (uc.count || 0);
-      recs.push({ priority: "high", text: gap + " requirements lack use cases", action: "Run /sdd:specifications-engineer" });
+      recs.push({ priority: "high", text: gap + " requirements lack use cases", action: "Run /sdd:specifications-engineer", prompt: getStagePrompt("specifications-engineer", "pending") });
     }
     var cod = c.reqsWithCode || {};
     if ((cod.percentage || 0) < TARGETS.code) {
       var gap2 = (cod.total || 0) - (cod.count || 0);
-      recs.push({ priority: "high", text: gap2 + " requirements have no code references", action: "Add Refs: comments to source files" });
+      recs.push({ priority: "high", text: gap2 + " requirements have no code references", action: "Add Refs: comments to source files", prompt: "Agrega comentarios Refs: en tu codigo fuente para vincular funciones a requisitos SDD.\n\nEjemplo:\n/**\n * Refs: UC-001, INV-EXT-005\n */\nfunction validateInput() { ... }" });
     }
     var tst = c.reqsWithTests || {};
     if ((tst.percentage || 0) < TARGETS.tests) {
       var gap3 = (tst.total || 0) - (tst.count || 0);
-      recs.push({ priority: "medium", text: gap3 + " requirements have no test coverage", action: "Add Refs: to test descriptions" });
+      recs.push({ priority: "medium", text: gap3 + " requirements have no test coverage", action: "Add Refs: to test descriptions", prompt: "Agrega comentarios Refs: en tus archivos de test para vincular tests a requisitos.\n\nEjemplo:\n// Refs: UC-001, INV-EXT-005\ndescribe('Validation', () => { ... })" });
     }
     var orphans = (st.orphans || []).length;
-    if (orphans > 0) recs.push({ priority: "medium", text: orphans + " orphaned artifacts found", action: "Review and link or remove" });
+    if (orphans > 0) recs.push({ priority: "medium", text: orphans + " orphaned artifacts found", action: "Review and link or remove", prompt: "Ejecuta /sdd:traceability-check para ver los artefactos huerfanos y decidir si vincularlos o eliminarlos." });
     var broken = (st.brokenReferences || []).length;
-    if (broken > 0) recs.push({ priority: "high", text: broken + " broken references", action: "Fix or remove invalid references" });
+    if (broken > 0) recs.push({ priority: "high", text: broken + " broken references", action: "Fix or remove invalid references", prompt: "Ejecuta /sdd:traceability-check para localizar las referencias rotas y corregirlas." });
     return recs;
   }
 
@@ -578,6 +738,13 @@ tr.row-none td:last-child{color:var(--red)}
   // --- Pipeline Bar ---
   var pipeEl = $("pipeline");
   var stageFilter = "";
+  var openPopover = null;
+
+  function closeAllPopovers() {
+    document.querySelectorAll(".stage-popover.open").forEach(function(p){ p.classList.remove("open"); });
+    openPopover = null;
+  }
+
   (DATA.pipeline && DATA.pipeline.stages || []).forEach(function(s, i){
     if(i > 0){
       var arrow = ce("span");
@@ -594,16 +761,57 @@ tr.row-none td:last-child{color:var(--red)}
     div.innerHTML = '<div class="stage-name">' + esc(s.name.replace(/-/g," ")) + '</div>'
       + '<div class="stage-count">' + (s.artifactCount || 0) + '</div>'
       + '<div class="stage-status">' + esc(s.status || "unknown") + '</div>';
-    div.addEventListener("click", function(){
+
+    // Build popover
+    var pop = ce("div");
+    pop.className = "stage-popover";
+    var statusCls = "st-" + (s.status || "unknown");
+    var lastRun = s.lastRun ? new Date(s.lastRun).toLocaleString() : "Never";
+    var prompt = getStagePrompt(s.name, s.status || "unknown");
+    pop.innerHTML = '<div class="stage-popover-header">'
+      + '<strong>' + esc(STAGE_LABELS[s.name] || s.name.replace(/-/g," ")) + '</strong>'
+      + '<span class="stage-popover-status ' + statusCls + '">' + esc(s.status || "unknown") + '</span>'
+      + '</div>'
+      + '<div class="stage-popover-info">' + (s.artifactCount || 0) + ' artifacts &middot; Last run: ' + esc(lastRun) + '</div>'
+      + '<div class="prompt-block" style="font-size:11px;max-height:120px;overflow-y:auto">' + esc(prompt) + '</div>'
+      + '<div class="stage-popover-actions"></div>';
+    div.appendChild(pop);
+
+    // Wire popover actions after DOM insertion
+    var actionsDiv = pop.querySelector(".stage-popover-actions");
+    actionsDiv.appendChild(makeCopyBtn(prompt, "Copy Prompt"));
+    var filterBtn = ce("button");
+    filterBtn.className = "stage-popover-filter";
+    filterBtn.textContent = "Filter by Stage";
+    filterBtn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      closeAllPopovers();
       $("fStage").value = "";
-      if(stageFilter === s.name){stageFilter="";div.classList.remove("active");}
-      else{
-        document.querySelectorAll(".pipeline-stage").forEach(function(e){e.classList.remove("active")});
-        stageFilter = s.name; div.classList.add("active");
-      }
+      document.querySelectorAll(".pipeline-stage").forEach(function(e2){e2.classList.remove("active")});
+      stageFilter = s.name; div.classList.add("active");
       applyFilters();
     });
+    actionsDiv.appendChild(filterBtn);
+
+    div.addEventListener("click", function(e){
+      e.stopPropagation();
+      if (pop.classList.contains("open")) {
+        pop.classList.remove("open");
+        openPopover = null;
+      } else {
+        closeAllPopovers();
+        pop.classList.add("open");
+        openPopover = pop;
+      }
+    });
     pipeEl.appendChild(div);
+  });
+
+  // Close popover on outside click
+  document.addEventListener("click", function(e) {
+    if (openPopover && !openPopover.contains(e.target)) {
+      closeAllPopovers();
+    }
   });
 
   // --- Stats Cards ---
@@ -648,6 +856,58 @@ tr.row-none td:last-child{color:var(--red)}
     return parts.slice(0,4).join(", ");
   }
 
+  // --- Utility Functions (Interactive) ---
+  function showToast(msg, type) {
+    var existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+    var t = ce("div");
+    t.className = "toast " + (type || "info");
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add("visible"); });
+    setTimeout(function(){ t.classList.remove("visible"); setTimeout(function(){ t.remove(); }, 200); }, 3000);
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function(){ showToast("Copied to clipboard!", "success"); }).catch(function(){ fallbackCopy(text); });
+    } else {
+      fallbackCopy(text);
+    }
+  }
+  function fallbackCopy(text) {
+    var ta = ce("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); showToast("Copied to clipboard!", "success"); }
+    catch(e) { showToast("Copy failed — select manually", "error"); }
+    document.body.removeChild(ta);
+  }
+
+  function timeAgo(isoDate) {
+    if (!isoDate) return "";
+    var diff = (Date.now() - new Date(isoDate).getTime()) / 1000;
+    if (diff < 60) return Math.floor(diff) + "s ago";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+    return Math.floor(diff / 86400) + "d ago";
+  }
+
+  function makeCopyBtn(text, label) {
+    var btn = ce("button");
+    btn.className = "copy-btn";
+    btn.textContent = label || "Copy";
+    btn.title = "Copy prompt to clipboard";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      copyToClipboard(text);
+      btn.classList.add("copied");
+      btn.textContent = "Copied!";
+      setTimeout(function() { btn.classList.remove("copied"); btn.textContent = label || "Copy"; }, 2000);
+    });
+    return btn;
+  }
+
   // --- Hero Health Score ---
   var healthScore = computeHealthScore(cov);
   var grade = healthGrade(healthScore);
@@ -674,11 +934,12 @@ tr.row-none td:last-child{color:var(--red)}
   heroHtml += '<div class="hero-actions">';
   if (recs.length > 0) {
     heroHtml += '<h3>Action Required (' + recs.length + ')</h3>';
-    recs.forEach(function(r) {
+    recs.forEach(function(r, ri) {
       heroHtml += '<div class="hero-rec">';
       heroHtml += '<span class="hero-rec-dot ' + r.priority + '"></span>';
-      heroHtml += '<div><div class="hero-rec-text">' + esc(r.text) + '</div>';
+      heroHtml += '<div style="flex:1"><div class="hero-rec-text">' + esc(r.text) + '</div>';
       heroHtml += '<div class="hero-rec-action">' + esc(r.action) + '</div></div>';
+      heroHtml += '<span class="hero-rec-copy" data-rec-idx="' + ri + '"></span>';
       heroHtml += '</div>';
     });
   } else {
@@ -686,6 +947,14 @@ tr.row-none td:last-child{color:var(--red)}
   }
   heroHtml += '</div>';
   heroEl.innerHTML = heroHtml;
+
+  // Wire up copy buttons on hero recommendations
+  heroEl.querySelectorAll(".hero-rec-copy").forEach(function(span) {
+    var idx = parseInt(span.getAttribute("data-rec-idx"), 10);
+    if (recs[idx] && recs[idx].prompt) {
+      span.appendChild(makeCopyBtn(recs[idx].prompt, "Copy"));
+    }
+  });
 
   // --- Build indexes ---
   var artById = {};
@@ -1466,7 +1735,25 @@ tr.row-none td:last-child{color:var(--red)}
   // ==========================================
   function renderSummary() {
     var el = $("view-summary");
-    var html = '<div class="summary-grid">';
+    var html = '';
+
+    // --- Next Action Card ---
+    var nextAct = getNextAction();
+    if (nextAct.stage) {
+      html += '<div class="next-action-card">';
+      html += '<h3><span class="live-dot off" id="nextActionLive"></span> Next Action</h3>';
+      html += '<div class="next-reason">' + esc(nextAct.reason) + '</div>';
+      html += '<div class="prompt-block" id="nextActionPrompt">' + esc(nextAct.prompt) + '</div>';
+      html += '</div>';
+    }
+
+    // --- Activity Feed ---
+    html += '<div class="activity-panel" id="activityPanel">';
+    html += '<h3><span class="live-dot off" id="activityLive"></span> Pipeline Activity</h3>';
+    html += '<div class="activity-feed" id="activityFeed"><div class="activity-empty">No live activity. Run a pipeline skill to see progress here.</div></div>';
+    html += '</div>';
+
+    html += '<div class="summary-grid">';
 
     // Card 1: Coverage Progress
     html += '<div class="summary-card"><h3>Traceability Coverage</h3>';
@@ -1551,6 +1838,12 @@ tr.row-none td:last-child{color:var(--red)}
     el.querySelectorAll(".summary-gap-id").forEach(function(span) {
       span.addEventListener("click", function() { openDetail(span.textContent) });
     });
+
+    // Wire copy button on Next Action card
+    var nap = $("nextActionPrompt");
+    if (nap) {
+      nap.appendChild(makeCopyBtn(nextAct.prompt, "Copy Prompt"));
+    }
   }
 
   // ==========================================
@@ -1761,11 +2054,112 @@ tr.row-none td:last-child{color:var(--red)}
   }
   addAdoptionStats();
 
+  // ==========================================
+  // JSONP LIVE STATUS SYSTEM
+  // ==========================================
+  var LIVE_STATUS = null;
+  var liveFailCount = 0;
+  var liveInterval = null;
+  var liveLastTimestamp = null;
+
+  function updateActivityFeed(history) {
+    var feed = $("activityFeed");
+    if (!feed) return;
+    if (!history || history.length === 0) {
+      feed.innerHTML = '<div class="activity-empty">No live activity. Run a pipeline skill to see progress here.</div>';
+      return;
+    }
+    feed.innerHTML = "";
+    var entries = history.slice(-20);
+    entries.forEach(function(entry) {
+      var div = ce("div");
+      div.className = "activity-entry";
+      var iconCls = entry.type === "error" ? "error" : entry.type === "done" ? "done" : entry.type === "running" ? "running" : "info";
+      var iconChar = entry.type === "error" ? "\u2717" : entry.type === "done" ? "\u2713" : entry.type === "running" ? "\u25B6" : "\u2022";
+      div.innerHTML = '<span class="activity-icon ' + iconCls + '">' + iconChar + '</span>'
+        + '<div class="activity-body">'
+        + '<span class="activity-stage">' + esc(entry.stage || "") + '</span> '
+        + '<span class="activity-msg">' + esc(entry.message || "") + '</span>'
+        + '<div class="activity-time">' + timeAgo(entry.timestamp) + '</div>'
+        + '</div>';
+      feed.appendChild(div);
+    });
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  function updateLiveDots(active, stale) {
+    var dots = document.querySelectorAll(".live-dot");
+    dots.forEach(function(dot) {
+      if (active) {
+        dot.classList.remove("off");
+        dot.classList.toggle("stale", !!stale);
+      } else {
+        dot.classList.add("off");
+      }
+    });
+  }
+
+  window.__SDD_LIVE_UPDATE = function(data) {
+    if (!data) return;
+    // Ignore older updates (race condition guard)
+    if (liveLastTimestamp && data.lastHeartbeat && new Date(data.lastHeartbeat) < new Date(liveLastTimestamp)) return;
+    liveLastTimestamp = data.lastHeartbeat || null;
+
+    LIVE_STATUS = data;
+    liveFailCount = 0;
+    updateActivityFeed(data.history || []);
+
+    // Check staleness
+    var stale = false;
+    if (data.lastHeartbeat && data.status === "running") {
+      var hbAge = (Date.now() - new Date(data.lastHeartbeat).getTime()) / 1000;
+      if (hbAge > 60) {
+        stale = true;
+        updateActivityFeed((data.history || []).concat([{
+          timestamp: new Date().toISOString(), stage: data.currentStage || "", message: "Possibly stalled (no heartbeat for " + Math.floor(hbAge) + "s)", type: "error"
+        }]));
+      }
+    }
+    updateLiveDots(true, stale);
+  };
+
+  function pollLiveStatus() {
+    // Remove previous script tag if any
+    var prev = document.getElementById("sdd-live-script");
+    if (prev) prev.remove();
+
+    var script = ce("script");
+    script.id = "sdd-live-script";
+    script.src = "./live-status.js?_=" + Date.now();
+    script.onerror = function() {
+      liveFailCount++;
+      if (liveFailCount >= 3) {
+        updateLiveDots(false, false);
+      }
+      script.remove();
+    };
+    script.onload = function() {
+      // __SDD_LIVE_UPDATE should have been called by the script
+      script.remove();
+    };
+    try {
+      document.head.appendChild(script);
+    } catch(e) {
+      liveFailCount++;
+    }
+  }
+
+  function initLiveStatus() {
+    pollLiveStatus();
+    liveInterval = setInterval(pollLiveStatus, 5000);
+  }
+
   // --- Initial render ---
   renderSummary();
   doFilter();
   renderCodeCoverage();
   renderAdoptionView();
+  initLiveStatus();
 })();
 </script>
 </body>
@@ -1785,6 +2179,52 @@ tr.row-none td:last-child{color:var(--red)}
 2. Replace `{{DATA_JSON}}` with the raw JSON string (already valid JS object literal)
 3. Replace `{{PROJECT_NAME}}` with the project name from the JSON
 4. Write result to `dashboard/index.html`
+
+## v5 Changes from v4
+
+### Interactive Prompts (Phase 1)
+- **Contextual Prompt Generation**: `getStagePrompt()` and `getNextAction()` produce Spanish-language, context-aware prompts based on pipeline state and coverage gaps
+- **Copy-to-Clipboard**: All prompts have "Copy" buttons that write to clipboard with toast notification feedback
+- **Next Action Card**: Prominent card at top of Summary view showing the single most important next step with copy-ready prompt
+- **Hero Recommendation Copy Buttons**: Each recommendation in the Health Score hero now has a copy button with a full contextual prompt
+
+### Pipeline Stage Popovers
+- **Click-to-Open Popover**: Each pipeline stage shows a popover on click with status, last run date, artifact count, and stage-specific prompt
+- **Popover Actions**: "Copy Prompt" button and "Filter by Stage" button within each popover
+- **Click-Away Dismiss**: Clicking outside the popover or on another stage closes it
+
+### Activity Feed & JSONP Live Status
+- **Activity Feed Panel**: Scrollable feed in Summary view showing real-time pipeline activity entries with timestamps, stage names, and status icons
+- **JSONP Polling**: Loads `./live-status.js` every 5 seconds via `<script>` tag injection (works with `file://` protocol)
+- **`window.__SDD_LIVE_UPDATE(data)`**: Callback function that receives live status data and updates the activity feed
+- **Live Dot Indicator**: Pulsing green dot when live status is active; yellow when stale; hidden when no live-status.js found
+- **Stale Detection**: If heartbeat >60s and status=running, shows "Possibly stalled" warning
+- **Graceful Degradation**: Silent no-op on file not found; live dot hidden after 3 failures; race condition guard via timestamp comparison
+
+### New CSS Components
+- `.toast`: Fixed bottom-right notification with slide-up animation and auto-dismiss
+- `.copy-btn`: Inline copy button with clipboard icon and "Copied!" state
+- `.next-action-card`: Accent-bordered card for the primary next action prompt
+- `.prompt-block`: Monospace code block for prompt text with positioned copy button
+- `.activity-panel` / `.activity-feed` / `.activity-entry`: Activity feed layout
+- `.stage-popover`: Popover attached to pipeline stages with arrow indicator
+- `.live-dot`: Pulsing indicator for live status with stale state
+
+### New Reference Document
+- `references/live-status-template.md`: JSONP schema, field reference, idle seed template, skill integration instructions
+
+## v4 Changes from v3
+
+### Bug Fixes & Visual Modernization
+- 3 CRITICAL fixes (pipeline null crash, NaN stats, XSS)
+- 4 HIGH fixes (undefined file, NaN gaps, filter conflict, ARIA)
+- Inter font, shadow system, gradient bg, SVG health ring, CSS pipeline arrows
+- View transitions, staggered fadeUp animations, custom tooltips, bento summary grid
+
+### Adoption View (5th tab)
+- Journey stepper, scenario card, health dimensions bars
+- Findings severity+category, reconciliation alignment+divergences, import sources+quality
+- Graceful empty states per sub-panel
 
 ## v3 Changes from v2
 

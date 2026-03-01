@@ -6,7 +6,7 @@ description: "Generates a visual HTML traceability dashboard from SDD pipeline a
   Triggers: 'dashboard', 'visualize pipeline', 'traceability dashboard',
   'show traceability', 'generar dashboard', 'visualizar trazabilidad',
   'show dashboard', 'pipeline visualization', 'ver dashboard'."
-version: "3.0.0"
+version: "4.0.0"
 ---
 
 # SDD Traceability Dashboard
@@ -28,6 +28,7 @@ You are the **SDD Dashboard Generator**. Your job is to scan all SDD pipeline ar
 | `dashboard/traceability-graph.json` | Structured graph of all artifacts and relationships |
 | `dashboard/index.html` | Self-contained HTML dashboard (CSS+JS inline) |
 | `dashboard/guide.html` | Static SDD system guide and dashboard interpretation docs |
+| `dashboard/live-status.js` | JSONP live status seed file for real-time activity feed |
 
 ## Process
 
@@ -339,6 +340,14 @@ Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
 6. Read the guide template from `references/guide-template.md` (extract the content inside the ```html code block).
 7. Write the extracted HTML directly to `dashboard/guide.html` (no placeholder replacement needed — the guide is static documentation).
 
+### Step 9.5: Generate Live Status Seed File
+
+1. Read the JSONP template structure from `references/live-status-template.md` (the "Idle Seed File" section).
+2. Replace `{{TIMESTAMP}}` with the current ISO-8601 timestamp.
+3. Write the result to `dashboard/live-status.js`.
+
+This creates an idle seed file that the dashboard's JSONP polling can find immediately. Pipeline skills will overwrite this file during execution with real-time progress data.
+
 ### Step 10: Open in Browser and Report
 
 Execute the appropriate command to open the dashboard:
@@ -349,7 +358,7 @@ Execute the appropriate command to open the dashboard:
 Report a summary to the user:
 
 ```
-## Dashboard Generated (v3)
+## Dashboard Generated (v4)
 
 | Metric | Value |
 |--------|-------|
@@ -372,6 +381,7 @@ Files written:
 - `dashboard/traceability-graph.json`
 - `dashboard/index.html`
 - `dashboard/guide.html`
+- `dashboard/live-status.js`
 
 Dashboard opened in default browser.
 ```
