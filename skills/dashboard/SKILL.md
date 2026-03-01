@@ -6,7 +6,7 @@ description: "Generates a visual HTML traceability dashboard from SDD pipeline a
   Triggers: 'dashboard', 'visualize pipeline', 'traceability dashboard',
   'show traceability', 'generar dashboard', 'visualizar trazabilidad',
   'show dashboard', 'pipeline visualization', 'ver dashboard'."
-version: "2.0.0"
+version: "3.0.0"
 ---
 
 # SDD Traceability Dashboard
@@ -57,8 +57,58 @@ Use Glob to check which of these directories exist and contain `.md` files:
 | `task/` | task-generator |
 | `src/` | task-implementer |
 | `tests/` | task-implementer |
+| `onboarding/` | onboarding |
+| `findings/` | reverse-engineer |
+| `reverse-engineering/` | reverse-engineer |
+| `reconciliation/` | reconcile |
+| `import/` | import |
 
 Record which directories exist and which are empty. Report any missing directories as informational notes (not errors — partial pipelines are normal).
+
+### Step 2.5: Scan Onboarding Artifacts
+
+Scan for onboarding/adoption data produced by the 4 onboarding skills. Parse each report if it exists:
+
+1. **`onboarding/ONBOARDING-REPORT.md`** → Extract:
+   - `scenario`: scenario identifier from "Scenario Classification" section
+   - `scenarioName`: human-readable name
+   - `confidence`: classification confidence value
+   - `healthScore`: overall health score from "Health Score" section
+   - `dimensions`: per-dimension scores (requirements, specs, tests, architecture, traceability, codeQuality, pipelineState)
+   - `actionPlan`: array of steps from "Action Plan" section (step number, skill name, description, effort level)
+   - `signals`: detection signals from "Signals Detected" section
+
+2. **`findings/FINDINGS-REPORT.md`** → Extract:
+   - `findings.total`: total findings count
+   - `findings.bySeverity`: count by severity (critical, high, medium, low)
+   - `findings.byCategory`: count by category (DEAD-CODE, TECH-DEBT, WORKAROUND, INFRASTRUCTURE, ORPHAN, INFERRED, IMPLICIT-RULE)
+   - `findings.topFindings`: first 5 critical/high findings with id, severity, category, description
+
+3. **`reverse-engineering/INVENTORY.md`** → Extract:
+   - `inventory.totalFiles`: total files analyzed
+   - `inventory.totalLOC`: total lines of code
+   - `inventory.byLayer`: file count by layer (Backend, Frontend, Infrastructure)
+
+4. **`reconciliation/RECONCILIATION-REPORT.md`** → Extract:
+   - `alignmentPercentage`: spec-code alignment percentage
+   - `divergences.total`: total divergences found
+   - `divergences.byType`: count by type (NEW_FUNCTIONALITY, REMOVED_FEATURE, BEHAVIORAL_CHANGE, REFACTORING, BUG_OR_DEFECT, AMBIGUOUS)
+   - `divergences.resolved` / `divergences.pending`: counts
+   - `delta`: specs/reqs added/modified counts
+
+5. **`import/IMPORT-REPORT.md`** → Extract:
+   - `sources`: array of { format, file, itemCount, mappedCount }
+   - `totals`: { itemsProcessed, itemsMapped, itemsSkipped }
+   - `quality`: { completeness, duplicatesFound, conflictsFound }
+   - `artifactsGenerated`: { requirements, useCases, apiContracts }
+
+**If a report does not exist**: Set `present: false` for that sub-block. If none of the onboarding directories exist, set `adoption: { present: false }`.
+
+**Compute adoptionStats**: If any onboarding data exists:
+- `overallAdoptionScore`: use onboarding healthScore if present, otherwise estimate from available data
+- `overallAdoptionGrade`: A (≥90), B (≥75), C (≥60), D (≥40), F (<40)
+- `criticalFindingsCount` / `highFindingsCount`: from findings data (0 if no findings)
+- `alignmentPercentage`: from reconciliation data (null if no reconciliation)
 
 ### Step 3: Extract Artifact Definitions
 
@@ -248,7 +298,7 @@ For each REQ artifact, compute a classification object using the taxonomy from `
 
 ### Step 8: Build traceability-graph.json
 
-Assemble the JSON structure following the schema in `references/graph-schema.md` (v2):
+Assemble the JSON structure following the schema in `references/graph-schema.md` (v3):
 
 1. **pipeline**: Merge stage statuses from Step 1 with artifact counts from Step 3.
 2. **artifacts**: All extracted artifacts from Step 3, enriched with:
@@ -274,6 +324,8 @@ Assemble the JSON structure following the schema in `references/graph-schema.md`
    - `testStats`: `{ totalTestFiles, totalTests, testsWithRefs }`
    - `commitStats`: `{ totalCommits, commitsWithRefs, commitsWithTasks, uniqueTasksCovered }`
    - `classificationStats`: `{ byDomain, byLayer, byCategory }` — count of REQs per classification value
+   - `adoptionStats`: from Step 2.5 (null if no onboarding data)
+5. **adoption**: From Step 2.5 — the full adoption block with onboarding, reverseEngineering, reconciliation, import sub-blocks.
 
 Write the JSON to `dashboard/traceability-graph.json` with 2-space indentation.
 
@@ -297,7 +349,7 @@ Execute the appropriate command to open the dashboard:
 Report a summary to the user:
 
 ```
-## Dashboard Generated (v2)
+## Dashboard Generated (v3)
 
 | Metric | Value |
 |--------|-------|

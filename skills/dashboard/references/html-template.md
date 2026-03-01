@@ -1,6 +1,6 @@
-# HTML Dashboard Template v3
+# HTML Dashboard Template v4
 
-Self-contained HTML template for the SDD Comprehension Dashboard. The skill replaces `{{DATA_JSON}}` with the serialized `traceability-graph.json` content (v2 schema).
+Self-contained HTML template for the SDD Comprehension Dashboard. The skill replaces `{{DATA_JSON}}` with the serialized `traceability-graph.json` content (v3 schema).
 
 ## Template
 
@@ -18,11 +18,14 @@ Self-contained HTML template for the SDD Comprehension Dashboard. The skill repl
   --text:#e4e7f1;--text2:#a0a4be;--text3:#8890a0;--accent:#6c8cff;--accent2:#4a6aef;
   --green:#34d399;--yellow:#f5c542;--red:#f87171;--orange:#fb923c;--gray:#8890a0;
   --purple:#a78bfa;--cyan:#22d3ee;--pink:#f472b6;--lime:#a3e635;
-  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:'SF Mono',Consolas,'Courier New',monospace;
   --radius:8px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.03);
+  --shadow-md:0 2px 8px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.05);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+body{font-family:var(--font);background:var(--bg);background-image:radial-gradient(ellipse at 50% 0%,rgba(108,140,255,.04) 0%,transparent 60%);color:var(--text);line-height:1.5;overflow-x:hidden;font-feature-settings:'tnum' 1,'cv01' 1}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 button{font-family:var(--font);cursor:pointer}
@@ -54,7 +57,8 @@ button{font-family:var(--font);cursor:pointer}
 
 /* Stats Cards */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:0 24px 16px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-card{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);padding:14px 16px;transition:box-shadow .2s ease}
+.stat-card:hover{box-shadow:var(--shadow-md)}
 .stat-card .stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
 .stat-card .stat-value{font-size:28px;font-weight:700;margin-top:2px}
 .stat-card .stat-sub{font-size:12px;color:var(--text2);margin-top:2px}
@@ -63,11 +67,11 @@ button{font-family:var(--font);cursor:pointer}
 
 /* Hero Health Score */
 .hero{padding:20px 24px;display:flex;gap:20px;align-items:stretch}
-.hero-score{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;min-width:160px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hero-score{background:var(--surface);box-shadow:var(--shadow-md);border:none;border-radius:var(--radius);padding:24px;text-align:center;min-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .hero-letter{font-size:56px;font-weight:800;line-height:1}
 .hero-label{font-size:13px;margin-top:4px;color:var(--text2)}
 .hero-sublabel{font-size:11px;color:var(--text3);margin-top:2px}
-.hero-actions{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px}
+.hero-actions{flex:1;background:var(--surface);box-shadow:var(--shadow-md);border:none;border-radius:var(--radius);padding:16px 20px}
 .hero-actions h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px}
 .hero-rec{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:13px}
 .hero-rec-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
@@ -84,13 +88,16 @@ button{font-family:var(--font);cursor:pointer}
 .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
 /* Executive Summary View */
-.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:16px}
-.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:16px}
+.summary-card:nth-child(1){grid-column:1/3}
+.summary-card:nth-child(2){grid-row:1/3;grid-column:3}
+.summary-card{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);padding:16px;transition:box-shadow .2s ease}
+.summary-card:hover{box-shadow:var(--shadow-md)}
 .summary-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px}
 .summary-progress{margin-bottom:12px}
 .summary-progress-header{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
-.summary-progress-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
-.summary-progress-fill{height:100%;border-radius:4px;transition:width .3s}
+.summary-progress-bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden}
+.summary-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .3s}
 .summary-top-gaps{list-style:none}
 .summary-top-gaps li{padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .summary-top-gaps li:last-child{border-bottom:none}
@@ -108,7 +115,7 @@ button{font-family:var(--font);cursor:pointer}
 .view-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
 /* Filter Bar */
-.filters{position:sticky;z-index:90;background:var(--bg);padding:6px 24px;display:flex;gap:5px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.filters{position:sticky;top:60px;z-index:90;background:var(--bg);padding:6px 24px;display:flex;gap:5px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .filter-input{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;min-width:130px;outline:none}
 .filter-input:focus{border-color:var(--accent)}
 .filter-select{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:var(--text);font-size:11px;outline:none;cursor:pointer}
@@ -116,19 +123,43 @@ button{font-family:var(--font);cursor:pointer}
 .filter-badge{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:2px 8px;font-size:11px;color:var(--text2);white-space:nowrap;margin-left:auto}
 
 /* View Containers */
-.view{display:none;padding:0 24px 24px}
-.view.active{display:block}
+.view{display:none;padding:0 24px 24px;opacity:0;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease}
+.view.active{display:block;opacity:1;transform:translateY(0)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stat-card,.summary-card,.class-card{animation:fadeUp .3s ease backwards}
+
+/* Custom Tooltips */
+[data-tooltip]{position:relative}
+[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--surface3);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s,transform .15s;z-index:300;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+[data-tooltip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+
+/* Focus Visible */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filter-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238890a0'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+
+/* Pipeline Arrows CSS */
+.pipeline-arrow{width:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pipeline-arrow::before{content:'';display:block;width:16px;height:2px;background:var(--border);position:relative}
+.pipeline-arrow::after{content:'';display:block;border:4px solid transparent;border-left-color:var(--border);position:absolute}
 
 /* === MATRIX VIEW === */
 .table-wrap{overflow:visible}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead{position:sticky;z-index:80}
+thead{position:sticky;top:108px;z-index:80}
 th{background:var(--surface2);color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--text)}
 th .sort-icon{margin-left:4px;opacity:.4}
 th.sorted .sort-icon{opacity:1;color:var(--accent)}
 td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
-tr:hover td{background:var(--surface)}
+tr:hover td{background:var(--surface2)}
+tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 tr.row-full td:last-child{color:var(--green)}
 tr.row-partial td:last-child{color:var(--yellow)}
 tr.row-spec-only td:last-child{color:var(--orange)}
@@ -164,7 +195,8 @@ tr.row-none td:last-child{color:var(--red)}
 
 /* === CLASSIFICATION VIEW === */
 .class-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;padding-top:16px}
-.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.class-card{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);overflow:hidden;transition:box-shadow .2s ease}
+.class-card:hover{box-shadow:var(--shadow-md)}
 .class-card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .class-card-header h3{font-size:14px;font-weight:600}
 .class-card-header .class-count{font-size:20px;font-weight:700;color:var(--accent)}
@@ -183,7 +215,7 @@ tr.row-none td:last-child{color:var(--red)}
 
 /* === CODE COVERAGE VIEW === */
 .cov-list{padding-top:16px}
-.cov-file{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.cov-file{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
 .cov-file-header{padding:10px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
 .cov-file-header:hover{background:var(--surface2)}
 .cov-file-path{font-family:var(--mono);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -261,6 +293,62 @@ tr.row-none td:last-child{color:var(--red)}
 .doc-item-id{font-family:var(--mono);font-weight:600;color:var(--accent);cursor:pointer;min-width:100px}
 .doc-item-title{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+/* === ADOPTION VIEW === */
+.adopt-grid{display:grid;grid-template-columns:1fr;gap:16px;padding-top:16px}
+.adopt-row-2{display:grid;grid-template-columns:1fr 2fr;gap:16px}
+.adopt-row-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.adopt-card{background:var(--surface);box-shadow:var(--shadow-sm);border:none;border-radius:var(--radius);padding:16px}
+.adopt-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px}
+.adopt-journey-steps{display:flex;gap:0;overflow-x:auto;padding:8px 0}
+.adopt-step{flex:1;min-width:140px;padding:12px;text-align:center;border-right:1px solid var(--border);position:relative}
+.adopt-step:last-child{border-right:none}
+.adopt-step-num{font-size:20px;font-weight:800;color:var(--accent);margin-bottom:4px}
+.adopt-step-skill{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px}
+.adopt-step-desc{font-size:12px;color:var(--text3)}
+.adopt-step-effort{font-size:10px;margin-top:4px;padding:2px 6px;border-radius:4px;display:inline-block}
+.adopt-step-effort.high{background:#2e1616;color:var(--red)}
+.adopt-step-effort.medium{background:#2e2a10;color:var(--yellow)}
+.adopt-step-effort.low{background:#162e23;color:var(--green)}
+.adopt-step.done{opacity:.5}
+.adopt-step.done .adopt-step-num{color:var(--green)}
+.adopt-step.done::after{content:'\2713';position:absolute;top:8px;right:8px;color:var(--green);font-size:14px;font-weight:700}
+.adopt-scenario-name{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.adopt-confidence{font-size:12px;color:var(--text2);margin-bottom:12px}
+.adopt-signal{display:inline-block;font-size:11px;background:var(--surface2);color:var(--text2);padding:2px 8px;border-radius:4px;margin:2px 4px 2px 0;font-family:var(--mono)}
+.adopt-dim{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
+.adopt-dim-label{width:120px;color:var(--text2);font-size:12px}
+.adopt-dim-bar{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.adopt-dim-fill{height:100%;border-radius:4px;transition:width .3s}
+.adopt-dim-val{width:36px;text-align:right;font-size:12px;font-weight:600;font-family:var(--mono)}
+.adopt-severity-bar{display:flex;height:24px;border-radius:4px;overflow:hidden;margin-bottom:12px}
+.adopt-severity-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.adopt-cat-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12px}
+.adopt-cat-label{width:120px;color:var(--text2);font-family:var(--mono);font-size:11px}
+.adopt-cat-count{font-weight:600;color:var(--text)}
+.adopt-finding-row{padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.adopt-finding-row:last-child{border-bottom:none}
+.adopt-finding-id{font-family:var(--mono);font-weight:600;color:var(--accent);margin-right:6px}
+.adopt-finding-sev{font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600;margin-right:6px}
+.adopt-finding-sev.critical{background:#2e1616;color:var(--red)}
+.adopt-finding-sev.high{background:#2e2216;color:var(--orange)}
+.adopt-align-pct{font-size:36px;font-weight:800;margin-bottom:4px}
+.adopt-div-table{font-size:12px;width:100%;margin-top:8px}
+.adopt-div-table td{padding:3px 8px;border-bottom:1px solid var(--border)}
+.adopt-div-table td:first-child{font-family:var(--mono);color:var(--text2);font-size:11px}
+.adopt-div-table td:last-child{text-align:right;font-weight:600}
+.adopt-import-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.adopt-import-row:last-child{border-bottom:none}
+.adopt-import-format{font-family:var(--mono);font-weight:600;color:var(--accent);min-width:60px}
+.adopt-import-file{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adopt-import-metric{text-align:right;font-weight:600}
+.adopt-source-table{width:100%;margin-top:8px}
+.adopt-empty{text-align:center;padding:40px 24px;color:var(--text2)}
+.adopt-empty h3{font-size:16px;margin-bottom:8px;color:var(--text)}
+.adopt-empty-cmd{font-family:var(--mono);font-size:13px;color:var(--accent);background:var(--surface2);padding:4px 12px;border-radius:4px;display:inline-block;margin-top:8px}
+@media(max-width:768px){
+  .adopt-row-2,.adopt-row-2b{grid-template-columns:1fr}
+}
+
 /* Empty state */
 .empty{text-align:center;padding:60px 24px;color:var(--text2)}
 .empty h2{font-size:18px;margin-bottom:8px;color:var(--text)}
@@ -274,6 +362,8 @@ tr.row-none td:last-child{color:var(--red)}
   .stats{grid-template-columns:repeat(2,1fr)}
   .hero{flex-direction:column}
   .summary-grid{grid-template-columns:1fr}
+  .summary-card:nth-child(1){grid-column:auto}
+  .summary-card:nth-child(2){grid-row:auto;grid-column:auto}
   .detail-panel{width:100%}
   .class-grid{grid-template-columns:1fr}
 }
@@ -282,7 +372,7 @@ tr.row-none td:last-child{color:var(--red)}
 <body>
 
 <div class="header">
-  <h1><span>SDD</span> Dashboard <span class="header-version">v3</span></h1>
+  <h1><span>SDD</span> Dashboard <span class="header-version">v4</span></h1>
   <div class="header-meta">
     <span id="hdr-project"></span> &middot; <span id="hdr-time"></span>
     <a href="guide.html" class="header-guide" title="System documentation and dashboard guide">Guide</a>
@@ -310,6 +400,7 @@ tr.row-none td:last-child{color:var(--red)}
   <button class="view-tab" data-view="matrix">Matrix</button>
   <button class="view-tab" data-view="classification">Classification</button>
   <button class="view-tab" data-view="coverage">Code Coverage</button>
+  <button class="view-tab" data-view="adoption">Adoption</button>
 </div>
 
 <!-- Filters -->
@@ -367,6 +458,9 @@ tr.row-none td:last-child{color:var(--red)}
   <div class="cov-list" id="covList"></div>
 </div>
 
+<!-- ADOPTION VIEW -->
+<div class="view" id="view-adoption"></div>
+
 <!-- Empty state -->
 <div class="empty" id="empty" style="display:none">
   <h2>No artifacts found</h2>
@@ -375,7 +469,7 @@ tr.row-none td:last-child{color:var(--red)}
 
 <!-- Detail Panel -->
 <div class="detail-overlay" id="detailOverlay"></div>
-<div class="detail-panel" id="detailPanel">
+<div class="detail-panel" id="detailPanel" role="dialog" aria-modal="true" aria-label="Artifact detail panel">
   <div class="detail-header">
     <button class="detail-close" id="detailClose">&times;</button>
     <div class="detail-id" id="dId"></div>
@@ -455,16 +549,19 @@ tr.row-none td:last-child{color:var(--red)}
   function generateRecommendations(cov, st) {
     var recs = [];
     var c = cov || {};
-    if ((c.reqsWithUCs || {}).percentage < TARGETS.ucs) {
-      var gap = (c.reqsWithUCs || {}).total - (c.reqsWithUCs || {}).count;
+    var uc = c.reqsWithUCs || {};
+    if ((uc.percentage || 0) < TARGETS.ucs) {
+      var gap = (uc.total || 0) - (uc.count || 0);
       recs.push({ priority: "high", text: gap + " requirements lack use cases", action: "Run /sdd:specifications-engineer" });
     }
-    if ((c.reqsWithCode || {}).percentage < TARGETS.code) {
-      var gap2 = (c.reqsWithCode || {}).total - (c.reqsWithCode || {}).count;
+    var cod = c.reqsWithCode || {};
+    if ((cod.percentage || 0) < TARGETS.code) {
+      var gap2 = (cod.total || 0) - (cod.count || 0);
       recs.push({ priority: "high", text: gap2 + " requirements have no code references", action: "Add Refs: comments to source files" });
     }
-    if ((c.reqsWithTests || {}).percentage < TARGETS.tests) {
-      var gap3 = (c.reqsWithTests || {}).total - (c.reqsWithTests || {}).count;
+    var tst = c.reqsWithTests || {};
+    if ((tst.percentage || 0) < TARGETS.tests) {
+      var gap3 = (tst.total || 0) - (tst.count || 0);
       recs.push({ priority: "medium", text: gap3 + " requirements have no test coverage", action: "Add Refs: to test descriptions" });
     }
     var orphans = (st.orphans || []).length;
@@ -481,21 +578,24 @@ tr.row-none td:last-child{color:var(--red)}
   // --- Pipeline Bar ---
   var pipeEl = $("pipeline");
   var stageFilter = "";
-  DATA.pipeline.stages.forEach(function(s, i){
+  (DATA.pipeline && DATA.pipeline.stages || []).forEach(function(s, i){
     if(i > 0){
       var arrow = ce("span");
       arrow.className = "pipeline-arrow";
-      arrow.textContent = "\u2192";
+      arrow.innerHTML = '<svg width="20" height="12" viewBox="0 0 20 12"><path d="M0 6h16M12 1l5 5-5 5" fill="none" stroke="var(--border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       pipeEl.appendChild(arrow);
     }
     var cls = "st-" + (s.status || "unknown");
     var div = ce("div");
     div.className = "pipeline-stage " + cls;
+    div.setAttribute("role", "button");
+    div.setAttribute("tabindex", "0");
     div.dataset.stage = s.name;
     div.innerHTML = '<div class="stage-name">' + esc(s.name.replace(/-/g," ")) + '</div>'
       + '<div class="stage-count">' + (s.artifactCount || 0) + '</div>'
       + '<div class="stage-status">' + esc(s.status || "unknown") + '</div>';
     div.addEventListener("click", function(){
+      $("fStage").value = "";
       if(stageFilter === s.name){stageFilter="";div.classList.remove("active");}
       else{
         document.querySelectorAll(".pipeline-stage").forEach(function(e){e.classList.remove("active")});
@@ -513,16 +613,16 @@ tr.row-none td:last-child{color:var(--red)}
 
   addStat("Artifacts", st.totalArtifacts || 0, typeSummary(st.byType), "", "Total number of traced artifacts across all types");
   addStat("Relationships", st.totalRelationships || 0, "", "", "Total number of links between artifacts");
-  var covUC = cov.reqsWithUCs ? cov.reqsWithUCs.percentage : 0;
+  var covUC = (cov.reqsWithUCs && cov.reqsWithUCs.percentage != null) ? cov.reqsWithUCs.percentage : 0;
   addStat("Requirements with Use Cases", covUC.toFixed(1) + "%", (cov.reqsWithUCs ? cov.reqsWithUCs.count + "/" + cov.reqsWithUCs.total : ""), covUC >= 80 ? "good" : "", "Percentage of requirements that have at least one Use Case linked");
-  var covCode = cov.reqsWithCode ? cov.reqsWithCode.percentage : 0;
+  var covCode = (cov.reqsWithCode && cov.reqsWithCode.percentage != null) ? cov.reqsWithCode.percentage : 0;
   addStat("Requirements with Code", covCode.toFixed(1) + "%", (cov.reqsWithCode ? cov.reqsWithCode.count + "/" + cov.reqsWithCode.total : ""), covCode >= 60 ? "good" : "", "Percentage of requirements referenced by source code (Refs: comments)");
-  var covTest = cov.reqsWithTests ? cov.reqsWithTests.percentage : 0;
+  var covTest = (cov.reqsWithTests && cov.reqsWithTests.percentage != null) ? cov.reqsWithTests.percentage : 0;
   addStat("Requirements with Tests", covTest.toFixed(1) + "%", (cov.reqsWithTests ? cov.reqsWithTests.count + "/" + cov.reqsWithTests.total : ""), covTest >= 60 ? "good" : "", "Percentage of requirements referenced by test files");
   var cs = st.commitStats || {};
   if (cs.totalCommits > 0) {
     addStat("Commits", cs.totalCommits, cs.commitsWithRefs + " with refs, " + cs.commitsWithTasks + " with tasks", "", "Git commits with Refs: or Task: trailers linking to SDD artifacts");
-    var covCommit = cov.reqsWithCommits ? cov.reqsWithCommits.percentage : 0;
+    var covCommit = (cov.reqsWithCommits && cov.reqsWithCommits.percentage != null) ? cov.reqsWithCommits.percentage : 0;
     addStat("Requirements with Commits", covCommit.toFixed(1) + "%", (cov.reqsWithCommits ? cov.reqsWithCommits.count + "/" + cov.reqsWithCommits.total : ""), covCommit >= 50 ? "good" : "", "Percentage of requirements linked to at least one git commit via Refs/Task trailers");
   }
   var orphanCount = (st.orphans || []).length;
@@ -530,9 +630,12 @@ tr.row-none td:last-child{color:var(--red)}
   var brokenCount = (st.brokenReferences || []).length;
   addStat("Broken References", brokenCount, "Undefined targets", brokenCount > 0 ? "warn" : "good", "References pointing to artifacts that do not exist");
 
+  var statIndex = 0;
   function addStat(label, value, sub, cls, tooltip){
     var d = ce("div"); d.className = "stat-card " + cls;
-    if(tooltip) d.title = tooltip;
+    if(tooltip) d.setAttribute("data-tooltip", tooltip);
+    d.style.animationDelay = (statIndex * 0.05) + "s";
+    statIndex++;
     d.innerHTML = '<div class="stat-label">' + esc(label) + '</div>'
       + '<div class="stat-value">' + esc(String(value)) + '</div>'
       + '<div class="stat-sub">' + esc(sub) + '</div>';
@@ -551,10 +654,21 @@ tr.row-none td:last-child{color:var(--red)}
   var recs = generateRecommendations(cov, st);
   var heroEl = $("hero");
 
+  function renderHealthRing(score, g) {
+    var r=52, c=2*Math.PI*r, offset=c-(score/100)*c;
+    return '<svg width="140" height="140" viewBox="0 0 120 120">'
+      + '<circle cx="60" cy="60" r="52" fill="none" stroke="var(--surface2)" stroke-width="8"/>'
+      + '<circle cx="60" cy="60" r="52" fill="none" stroke="'+g.color+'" stroke-width="8" '
+      + 'stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" '
+      + 'stroke-linecap="round" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1s ease"/>'
+      + '<text x="60" y="55" text-anchor="middle" font-size="36" font-weight="800" fill="'+g.color+'">'+g.letter+'</text>'
+      + '<text x="60" y="75" text-anchor="middle" font-size="13" fill="var(--text2)">'+score+'/100</text>'
+      + '</svg>';
+  }
+
   var heroHtml = '<div class="hero-score">';
-  heroHtml += '<div class="hero-letter" style="color:' + grade.color + '">' + grade.letter + '</div>';
-  heroHtml += '<div class="hero-label">' + grade.label + '</div>';
-  heroHtml += '<div class="hero-sublabel">' + healthScore + '/100</div>';
+  heroHtml += renderHealthRing(healthScore, grade);
+  heroHtml += '<div class="hero-label" style="margin-top:8px">' + grade.label + '</div>';
   heroHtml += '</div>';
 
   heroHtml += '<div class="hero-actions">';
@@ -638,7 +752,7 @@ tr.row-none td:last-child{color:var(--red)}
   populateSelect($("fDomain"), domains);
   populateSelect($("fLayer"), layers);
   populateSelect($("fCategory"), categories);
-  DATA.pipeline.stages.forEach(function(s){
+  (DATA.pipeline && DATA.pipeline.stages || []).forEach(function(s){
     var o = ce("option"); o.value = s.name; o.textContent = s.name.replace(/-/g," ");
     $("fStage").appendChild(o);
   });
@@ -701,8 +815,11 @@ tr.row-none td:last-child{color:var(--red)}
       var tdId = ce("td");
       var idSpan = ce("span");
       idSpan.className = "cell-id";
+      idSpan.setAttribute("role", "button");
+      idSpan.setAttribute("tabindex", "0");
       idSpan.textContent = row.art.id;
       idSpan.addEventListener("click", function(){ openDetail(row.art.id) });
+      idSpan.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(row.art.id)} });
       tdId.appendChild(idSpan);
       tr.appendChild(tdId);
 
@@ -846,10 +963,14 @@ tr.row-none td:last-child{color:var(--red)}
       items.forEach(function(row){
         var item = ce("div");
         item.className = "class-item";
-        item.innerHTML = '<span class="item-status ' + row.status + '"></span>'
+        var statusAriaLabels = {"full":"Complete","partial":"In Progress","spec-only":"Specified","none":"Not Started"};
+        item.innerHTML = '<span class="item-status ' + row.status + '" aria-label="' + (statusAriaLabels[row.status] || row.status) + '"></span>'
           + '<span class="item-id">' + esc(row.art.id) + '</span>'
           + '<span class="item-title">' + esc(row.art.title || "") + '</span>';
+        item.setAttribute("role", "button");
+        item.setAttribute("tabindex", "0");
         item.addEventListener("click", function(){ openDetail(row.art.id) });
+        item.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetail(row.art.id)} });
         body.appendChild(item);
       });
       card.appendChild(body);
@@ -1042,7 +1163,7 @@ tr.row-none td:last-child{color:var(--red)}
     if(!art) return;
     $("dId").textContent = art.id;
     $("dTitle").textContent = art.title || "";
-    $("dFile").textContent = art.file + (art.line ? ":" + art.line : "");
+    $("dFile").textContent = art.file ? (art.file + (art.line ? ":" + art.line : "")) : "";
 
     // Badges
     var badgesEl = $("dBadges");
@@ -1221,7 +1342,7 @@ tr.row-none td:last-child{color:var(--red)}
 
       var fileSpan = ce("span");
       fileSpan.className = "chain-file";
-      fileSpan.textContent = r.sourceFile + (r.line ? ":" + r.line : "");
+      fileSpan.textContent = r.sourceFile ? (r.sourceFile + (r.line ? ":" + r.line : "")) : "";
       li.appendChild(fileSpan);
 
       ul.appendChild(li);
@@ -1385,7 +1506,10 @@ tr.row-none td:last-child{color:var(--red)}
         if (g.counts.CODE === 0) missing.push("Code");
         if (g.counts.TESTS === 0) missing.push("Tests");
         html += '<li><span class="summary-gap-id">' + esc(g.art.id) + '</span>';
-        html += '<span class="summary-gap-missing">Missing: ' + missing.join(", ") + '</span></li>';
+        if (missing.length > 0) {
+          html += '<span class="summary-gap-missing">Missing: ' + missing.join(", ") + '</span>';
+        }
+        html += '</li>';
       });
       html += '</ul>';
     } else {
@@ -1401,7 +1525,7 @@ tr.row-none td:last-child{color:var(--red)}
     typeOrder.forEach(function(t) {
       if (bt[t]) {
         html += '<div class="summary-breakdown-item">';
-        html += '<div class="summary-breakdown-value">' + bt[t] + '</div>';
+        html += '<div class="summary-breakdown-value">' + esc(String(bt[t])) + '</div>';
         html += '<div class="summary-breakdown-label">' + humanLabel(t) + '</div>';
         html += '</div>';
       }
@@ -1410,10 +1534,10 @@ tr.row-none td:last-child{color:var(--red)}
 
     // Card 4: Pipeline Status
     html += '<div class="summary-card"><h3>Pipeline Status</h3>';
-    DATA.pipeline.stages.forEach(function(s) {
+    (DATA.pipeline && DATA.pipeline.stages || []).forEach(function(s) {
       var stColor = s.status === "done" ? "var(--green)" : s.status === "running" ? "var(--yellow)" : s.status === "error" ? "var(--red)" : "var(--gray)";
       html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px">';
-      html += '<span style="width:8px;height:8px;border-radius:50%;background:' + stColor + ';flex-shrink:0"></span>';
+      html += '<span style="width:8px;height:8px;border-radius:50%;background:' + stColor + ';flex-shrink:0" aria-label="Status: ' + esc(s.status || 'unknown') + '"></span>';
       html += '<span style="flex:1">' + esc(s.name.replace(/-/g, " ")) + '</span>';
       html += '<span style="font-size:11px;color:var(--text2)">' + (s.artifactCount || 0) + ' artifacts</span>';
       html += '</div>';
@@ -1429,10 +1553,219 @@ tr.row-none td:last-child{color:var(--red)}
     });
   }
 
+  // ==========================================
+  // ADOPTION VIEW
+  // ==========================================
+  function renderAdoptionView() {
+    var el = $("view-adoption");
+    var adoption = DATA.adoption || { present: false };
+    var adoptStats = (DATA.statistics || {}).adoptionStats || {};
+
+    if (!adoption.present) {
+      el.innerHTML = '<div class="adopt-empty">'
+        + '<h3>No Adoption Data</h3>'
+        + '<p>Run onboarding skills to populate this view with project adoption status.</p>'
+        + '<div class="adopt-empty-cmd">/sdd:onboarding</div>'
+        + '</div>';
+      return;
+    }
+
+    var html = '<div class="adopt-grid">';
+
+    // Journey Card (action plan stepper)
+    var ob = adoption.onboarding;
+    if (ob && ob.present && ob.actionPlan && ob.actionPlan.length > 0) {
+      html += '<div class="adopt-card"><h3>Adoption Journey</h3>';
+      html += '<div class="adopt-journey-steps">';
+      ob.actionPlan.forEach(function(step) {
+        var done = isStepDone(step.skill, adoption);
+        html += '<div class="adopt-step' + (done ? ' done' : '') + '">';
+        html += '<div class="adopt-step-num">' + step.step + '</div>';
+        html += '<div class="adopt-step-skill">/sdd:' + esc(step.skill) + '</div>';
+        html += '<div class="adopt-step-desc">' + esc(step.description) + '</div>';
+        html += '<span class="adopt-step-effort ' + esc(step.effort || 'medium') + '">' + esc(step.effort || 'medium') + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    // Row 2: Scenario + Health Dimensions
+    html += '<div class="adopt-row-2">';
+
+    // Scenario card
+    if (ob && ob.present) {
+      html += '<div class="adopt-card"><h3>Project Scenario</h3>';
+      html += '<div class="adopt-scenario-name">' + esc(ob.scenarioName || ob.scenario || 'Unknown') + '</div>';
+      if (ob.confidence != null) {
+        html += '<div class="adopt-confidence">Confidence: ' + (ob.confidence * 100).toFixed(0) + '%</div>';
+      }
+      if (ob.signals && ob.signals.length > 0) {
+        ob.signals.forEach(function(sig) {
+          html += '<span class="adopt-signal">' + esc(sig) + '</span>';
+        });
+      }
+      html += '</div>';
+    } else {
+      html += '<div class="adopt-card"><h3>Project Scenario</h3><div class="empty-section">Run /sdd:onboarding</div></div>';
+    }
+
+    // Health Dimensions card
+    if (ob && ob.present && ob.dimensions) {
+      html += '<div class="adopt-card"><h3>Health Dimensions</h3>';
+      var dims = ob.dimensions;
+      var dimKeys = ["requirements","specs","tests","architecture","traceability","codeQuality","pipelineState"];
+      var dimLabels = {requirements:"Requirements",specs:"Specifications",tests:"Tests",architecture:"Architecture",traceability:"Traceability",codeQuality:"Code Quality",pipelineState:"Pipeline State"};
+      dimKeys.forEach(function(k) {
+        var val = dims[k] || 0;
+        var color = val >= 70 ? "var(--green)" : val >= 40 ? "var(--yellow)" : "var(--red)";
+        html += '<div class="adopt-dim">';
+        html += '<span class="adopt-dim-label">' + (dimLabels[k] || k) + '</span>';
+        html += '<div class="adopt-dim-bar"><div class="adopt-dim-fill" style="width:' + val + '%;background:' + color + '"></div></div>';
+        html += '<span class="adopt-dim-val">' + val + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="adopt-card"><h3>Health Dimensions</h3><div class="empty-section">Run /sdd:onboarding</div></div>';
+    }
+    html += '</div>'; // end row-2
+
+    // Row 2b: Findings + Reconciliation
+    html += '<div class="adopt-row-2b">';
+
+    // Findings card
+    var re = adoption.reverseEngineering;
+    if (re && re.present && re.findings) {
+      var f = re.findings;
+      html += '<div class="adopt-card"><h3>Code Findings (' + (f.total || 0) + ')</h3>';
+      // Severity bar
+      var sev = f.bySeverity || {};
+      var sevTotal = (sev.critical || 0) + (sev.high || 0) + (sev.medium || 0) + (sev.low || 0);
+      if (sevTotal > 0) {
+        html += '<div class="adopt-severity-bar">';
+        if (sev.critical) html += '<div class="adopt-severity-seg" style="width:' + (sev.critical/sevTotal*100) + '%;background:var(--red)">' + sev.critical + '</div>';
+        if (sev.high) html += '<div class="adopt-severity-seg" style="width:' + (sev.high/sevTotal*100) + '%;background:var(--orange)">' + sev.high + '</div>';
+        if (sev.medium) html += '<div class="adopt-severity-seg" style="width:' + (sev.medium/sevTotal*100) + '%;background:var(--yellow)">' + sev.medium + '</div>';
+        if (sev.low) html += '<div class="adopt-severity-seg" style="width:' + (sev.low/sevTotal*100) + '%;background:var(--green)">' + sev.low + '</div>';
+        html += '</div>';
+      }
+      // Category list
+      var cats = f.byCategory || {};
+      Object.keys(cats).forEach(function(cat) {
+        html += '<div class="adopt-cat-row"><span class="adopt-cat-label">[' + esc(cat) + ']</span><span class="adopt-cat-count">' + cats[cat] + '</span></div>';
+      });
+      // Top findings
+      if (f.topFindings && f.topFindings.length > 0) {
+        html += '<div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--border)">';
+        f.topFindings.forEach(function(tf) {
+          html += '<div class="adopt-finding-row">';
+          html += '<span class="adopt-finding-id">' + esc(tf.id) + '</span>';
+          html += '<span class="adopt-finding-sev ' + esc(tf.severity) + '">' + esc(tf.severity) + '</span>';
+          html += esc(tf.description);
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    } else {
+      html += '<div class="adopt-card"><h3>Code Findings</h3><div class="empty-section">Run /sdd:reverse-engineer</div></div>';
+    }
+
+    // Reconciliation card
+    var rec = adoption.reconciliation;
+    if (rec && rec.present) {
+      html += '<div class="adopt-card"><h3>Spec-Code Alignment</h3>';
+      var alignColor = (rec.alignmentPercentage || 0) >= 80 ? "var(--green)" : (rec.alignmentPercentage || 0) >= 60 ? "var(--yellow)" : "var(--red)";
+      html += '<div class="adopt-align-pct" style="color:' + alignColor + '">' + (rec.alignmentPercentage || 0).toFixed(1) + '%</div>';
+      html += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">alignment</div>';
+      if (rec.divergences) {
+        var dv = rec.divergences;
+        html += '<div style="font-size:13px;margin-bottom:8px">' + (dv.total || 0) + ' divergences (' + (dv.resolved || 0) + ' resolved, ' + (dv.pending || 0) + ' pending)</div>';
+        if (dv.byType) {
+          html += '<table class="adopt-div-table">';
+          Object.keys(dv.byType).forEach(function(t) {
+            html += '<tr><td>' + esc(t) + '</td><td>' + dv.byType[t] + '</td></tr>';
+          });
+          html += '</table>';
+        }
+      }
+      if (rec.delta) {
+        html += '<div style="margin-top:8px;font-size:11px;color:var(--text3)">';
+        html += 'Delta: +' + (rec.delta.specsAdded || 0) + ' specs, ~' + (rec.delta.specsModified || 0) + ' modified, +' + (rec.delta.reqsAdded || 0) + ' reqs';
+        html += '</div>';
+      }
+      html += '</div>';
+    } else {
+      html += '<div class="adopt-card"><h3>Spec-Code Alignment</h3><div class="empty-section">Run /sdd:reconcile</div></div>';
+    }
+    html += '</div>'; // end row-2b
+
+    // Import card (full width)
+    var imp = adoption.import;
+    if (imp && imp.present) {
+      html += '<div class="adopt-card"><h3>Imported Data</h3>';
+      if (imp.sources && imp.sources.length > 0) {
+        imp.sources.forEach(function(src) {
+          html += '<div class="adopt-import-row">';
+          html += '<span class="adopt-import-format">' + esc(src.format) + '</span>';
+          html += '<span class="adopt-import-file">' + esc(src.file) + '</span>';
+          html += '<span class="adopt-import-metric">' + (src.mappedCount || 0) + '/' + (src.itemCount || 0) + ' mapped</span>';
+          html += '</div>';
+        });
+      }
+      if (imp.totals) {
+        html += '<div style="display:flex;gap:24px;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);font-size:12px">';
+        html += '<div><strong>' + (imp.totals.itemsProcessed || 0) + '</strong> <span style="color:var(--text2)">processed</span></div>';
+        html += '<div><strong>' + (imp.totals.itemsMapped || 0) + '</strong> <span style="color:var(--text2)">mapped</span></div>';
+        html += '<div><strong>' + (imp.totals.itemsSkipped || 0) + '</strong> <span style="color:var(--text2)">skipped</span></div>';
+        html += '</div>';
+      }
+      if (imp.quality) {
+        html += '<div style="display:flex;gap:24px;margin-top:8px;font-size:12px">';
+        html += '<div>Completeness: <strong>' + (imp.quality.completeness || 0).toFixed(1) + '%</strong></div>';
+        html += '<div>Duplicates: <strong>' + (imp.quality.duplicatesFound || 0) + '</strong></div>';
+        html += '<div>Conflicts: <strong>' + (imp.quality.conflictsFound || 0) + '</strong></div>';
+        html += '</div>';
+      }
+      if (imp.artifactsGenerated) {
+        var ag = imp.artifactsGenerated;
+        html += '<div style="margin-top:8px;font-size:11px;color:var(--text3)">Generated: ';
+        html += (ag.requirements || 0) + ' requirements, ' + (ag.useCases || 0) + ' use cases, ' + (ag.apiContracts || 0) + ' API contracts';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>'; // end adopt-grid
+    el.innerHTML = html;
+  }
+
+  function isStepDone(skillName, adoption) {
+    if (skillName === "reverse-engineer" && adoption.reverseEngineering && adoption.reverseEngineering.present) return true;
+    if (skillName === "reconcile" && adoption.reconciliation && adoption.reconciliation.present) return true;
+    if (skillName === "import" && adoption.import && adoption.import.present) return true;
+    if (skillName === "onboarding" && adoption.onboarding && adoption.onboarding.present) return true;
+    return false;
+  }
+
+  // --- Adoption stat cards in Summary ---
+  function addAdoptionStats() {
+    var adoption = DATA.adoption || { present: false };
+    var adoptStats = (DATA.statistics || {}).adoptionStats || {};
+    if (adoption.present) {
+      addStat("SDD Adoption", (adoptStats.overallAdoptionGrade || "\u2014") + " (" + (adoptStats.overallAdoptionScore || 0) + ")", "Adoption health grade", (adoptStats.overallAdoptionScore || 0) >= 60 ? "good" : "", "Overall SDD adoption score from onboarding assessment");
+      var crit = adoptStats.criticalFindingsCount || 0;
+      var high = adoptStats.highFindingsCount || 0;
+      addStat("Code Findings", crit + high, crit + " critical, " + high + " high", (crit > 0) ? "warn" : "", "Critical and high-severity findings from reverse engineering");
+    }
+  }
+  addAdoptionStats();
+
   // --- Initial render ---
   renderSummary();
   doFilter();
   renderCodeCoverage();
+  renderAdoptionView();
 })();
 </script>
 </body>
@@ -1443,7 +1776,7 @@ tr.row-none td:last-child{color:var(--red)}
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `{{DATA_JSON}}` | Serialized `traceability-graph.json` content (v2 schema) | `{"$schema":"traceability-graph-v2",...}` |
+| `{{DATA_JSON}}` | Serialized `traceability-graph.json` content (v3 schema) | `{"$schema":"traceability-graph-v3",...}` |
 | `{{PROJECT_NAME}}` | Project name for title tag | `HackInHire` |
 
 ## Substitution Instructions

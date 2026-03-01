@@ -6,7 +6,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 
 ```json
 {
-  "$schema": "traceability-graph-v2",
+  "$schema": "traceability-graph-v3",
   "generatedAt": "2026-02-27T15:30:00.000Z",
   "projectName": "my-project",
 
@@ -186,6 +186,77 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
         "Data": 25,
         "Integration": 25
       }
+    },
+    "adoptionStats": {
+      "overallAdoptionScore": 65,
+      "overallAdoptionGrade": "C",
+      "criticalFindingsCount": 3,
+      "highFindingsCount": 8,
+      "alignmentPercentage": 78.5
+    }
+  },
+
+  "adoption": {
+    "present": true,
+    "onboarding": {
+      "present": true,
+      "scenario": "brownfield-bare",
+      "scenarioName": "Brownfield — No Documentation",
+      "confidence": 0.85,
+      "healthScore": 42,
+      "dimensions": {
+        "requirements": 0,
+        "specs": 0,
+        "tests": 65,
+        "architecture": 20,
+        "traceability": 0,
+        "codeQuality": 55,
+        "pipelineState": 0
+      },
+      "actionPlan": [
+        { "step": 1, "skill": "reverse-engineer", "description": "Generate SDD artifacts from existing code", "effort": "high" },
+        { "step": 2, "skill": "reconcile", "description": "Align generated specs with code reality", "effort": "medium" },
+        { "step": 3, "skill": "test-planner", "description": "Create test plan from specifications", "effort": "medium" }
+      ],
+      "signals": ["has_source_code", "no_requirements_dir", "no_spec_dir", "has_tests"]
+    },
+    "reverseEngineering": {
+      "present": true,
+      "findings": {
+        "total": 45,
+        "bySeverity": { "critical": 3, "high": 8, "medium": 20, "low": 14 },
+        "byCategory": { "DEAD-CODE": 5, "TECH-DEBT": 12, "WORKAROUND": 8, "INFRASTRUCTURE": 6, "ORPHAN": 4, "INFERRED": 7, "IMPLICIT-RULE": 3 },
+        "topFindings": [
+          { "id": "FIND-001", "severity": "critical", "category": "TECH-DEBT", "description": "No error handling in payment module" },
+          { "id": "FIND-002", "severity": "critical", "category": "DEAD-CODE", "description": "Unused authentication middleware" }
+        ]
+      },
+      "inventory": {
+        "totalFiles": 156,
+        "totalLOC": 24500,
+        "byLayer": { "Backend": 95, "Frontend": 45, "Infrastructure": 16 }
+      }
+    },
+    "reconciliation": {
+      "present": true,
+      "alignmentPercentage": 78.5,
+      "divergences": {
+        "total": 12,
+        "byType": { "NEW_FUNCTIONALITY": 4, "BEHAVIORAL_CHANGE": 3, "REFACTORING": 2, "BUG_OR_DEFECT": 1, "REMOVED_FEATURE": 1, "AMBIGUOUS": 1 },
+        "resolved": 8,
+        "pending": 4
+      },
+      "delta": { "specsAdded": 6, "specsModified": 4, "reqsAdded": 3, "reqsModified": 2 }
+    },
+    "import": {
+      "present": true,
+      "sources": [
+        { "format": "jira", "file": "backlog-export.csv", "itemCount": 85, "mappedCount": 72 },
+        { "format": "openapi", "file": "api-spec.yaml", "itemCount": 24, "mappedCount": 24 }
+      ],
+      "totals": { "itemsProcessed": 109, "itemsMapped": 96, "itemsSkipped": 13 },
+      "quality": { "completeness": 88.1, "duplicatesFound": 5, "conflictsFound": 2 },
+      "artifactsGenerated": { "requirements": 72, "useCases": 18, "apiContracts": 24 }
     }
   }
 }
@@ -197,7 +268,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `$schema` | string | Yes | Always `"traceability-graph-v2"` |
+| `$schema` | string | Yes | Always `"traceability-graph-v3"` |
 | `generatedAt` | string (ISO-8601) | Yes | When the graph was generated |
 | `projectName` | string | Yes | Name of the project (from `package.json`, directory name, or `pipeline-state.json`) |
 
@@ -323,6 +394,7 @@ Schema for `dashboard/traceability-graph.json` — the structured representation
 | `testStats` | object | Test scanning statistics |
 | `commitStats` | object | Commit scanning statistics |
 | `classificationStats` | object | Classification breakdown statistics |
+| `adoptionStats` | object or null | Adoption/onboarding statistics (null if no onboarding data) |
 
 ### traceabilityCoverage
 
@@ -370,6 +442,68 @@ Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 | `byLayer` | object | Count of REQs per technical layer (`Infrastructure`, `Backend`, `Frontend`, `Integration/Deployment`, `Unknown`) |
 | `byCategory` | object | Count of REQs per functional category (`Functional`, `Non-Functional`, `Security`, `Data`, `Integration`) |
 
+### adoptionStats
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overallAdoptionScore` | number | Overall SDD adoption score 0-100 |
+| `overallAdoptionGrade` | string | Letter grade A-F |
+| `criticalFindingsCount` | number | Count of critical findings from reverse engineering |
+| `highFindingsCount` | number | Count of high findings from reverse engineering |
+| `alignmentPercentage` | number | Spec-code alignment percentage from reconciliation |
+
+### adoption
+
+Top-level block for onboarding skill data. Defaults to `{ "present": false }` when no onboarding data exists.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `present` | boolean | Yes | Whether any adoption/onboarding data exists |
+| `onboarding` | object | No | Data from `onboarding/ONBOARDING-REPORT.md` |
+| `reverseEngineering` | object | No | Data from `findings/FINDINGS-REPORT.md` and `reverse-engineering/INVENTORY.md` |
+| `reconciliation` | object | No | Data from `reconciliation/RECONCILIATION-REPORT.md` |
+| `import` | object | No | Data from `import/IMPORT-REPORT.md` |
+
+### adoption.onboarding
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `present` | boolean | Whether onboarding report exists |
+| `scenario` | string | Scenario identifier (e.g., `"brownfield-bare"`, `"greenfield"`) |
+| `scenarioName` | string | Human-readable scenario name |
+| `confidence` | number | Classification confidence 0-1 |
+| `healthScore` | number | Project health score 0-100 |
+| `dimensions` | object | Per-dimension scores: `requirements`, `specs`, `tests`, `architecture`, `traceability`, `codeQuality`, `pipelineState` (each 0-100) |
+| `actionPlan` | array | Steps: `{ step, skill, description, effort }` |
+| `signals` | array of strings | Detection signals found |
+
+### adoption.reverseEngineering
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `present` | boolean | Whether reverse engineering data exists |
+| `findings` | object | `{ total, bySeverity: {critical,high,medium,low}, byCategory: {DEAD-CODE,...}, topFindings: [{id,severity,category,description}] }` |
+| `inventory` | object | `{ totalFiles, totalLOC, byLayer: {Backend,Frontend,...} }` |
+
+### adoption.reconciliation
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `present` | boolean | Whether reconciliation data exists |
+| `alignmentPercentage` | number | Spec-code alignment 0-100 |
+| `divergences` | object | `{ total, byType: {NEW_FUNCTIONALITY,...}, resolved, pending }` |
+| `delta` | object | `{ specsAdded, specsModified, reqsAdded, reqsModified }` |
+
+### adoption.import
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `present` | boolean | Whether import data exists |
+| `sources` | array | `[{ format, file, itemCount, mappedCount }]` |
+| `totals` | object | `{ itemsProcessed, itemsMapped, itemsSkipped }` |
+| `quality` | object | `{ completeness, duplicatesFound, conflictsFound }` |
+| `artifactsGenerated` | object | `{ requirements, useCases, apiContracts }` |
+
 ## Migration from v1
 
 | v1 Field | v2 Change |
@@ -392,6 +526,16 @@ Each coverage object: `{ "count": N, "total": M, "percentage": P }`
 | Relationship type `implemented-by-commit` | **New**: commit→artifact reference |
 
 All v1 fields remain unchanged. v2 is a backward-compatible extension.
+
+## Migration from v2
+
+| v2 Field | v3 Change |
+|----------|-----------|
+| `$schema: "traceability-graph-v2"` | Changed to `"traceability-graph-v3"` |
+| `adoption` | **New**: top-level adoption block with onboarding, reverseEngineering, reconciliation, import sub-blocks |
+| `statistics.adoptionStats` | **New**: adoption score, grade, findings counts, alignment percentage |
+
+All v2 fields remain unchanged. v3 is a backward-compatible extension. When no onboarding data exists, `adoption` defaults to `{ "present": false }` and `adoptionStats` is `null`.
 
 ## Notes
 

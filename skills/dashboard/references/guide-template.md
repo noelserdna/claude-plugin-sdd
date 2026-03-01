@@ -140,7 +140,15 @@ a:hover{text-decoration:underline}
   <a href="#automation" class="sidebar-link">Automation</a>
   <a href="#utility-skills" class="sidebar-link">Utility Skills</a>
 
-  <div class="sidebar-section">Part 2: Reading the Dashboard</div>
+  <div class="sidebar-section">Part 2: Adopting SDD</div>
+  <a href="#when-to-onboard" class="sidebar-link">When to Onboard</a>
+  <a href="#project-scenarios" class="sidebar-link">Project Scenarios</a>
+  <a href="#skill-onboarding" class="sidebar-link sub">sdd:onboarding</a>
+  <a href="#skill-reverse-engineer" class="sidebar-link sub">sdd:reverse-engineer</a>
+  <a href="#skill-reconcile" class="sidebar-link sub">sdd:reconcile</a>
+  <a href="#skill-import" class="sidebar-link sub">sdd:import</a>
+
+  <div class="sidebar-section">Part 3: Reading the Dashboard</div>
   <a href="#dashboard-header" class="sidebar-link">Header &amp; Pipeline Bar</a>
   <a href="#dashboard-stats" class="sidebar-link">Stats Cards</a>
   <a href="#dashboard-health" class="sidebar-link">Health Score</a>
@@ -149,6 +157,7 @@ a:hover{text-decoration:underline}
   <a href="#view-matrix" class="sidebar-link">Matrix View</a>
   <a href="#view-classification" class="sidebar-link">Classification View</a>
   <a href="#view-coverage" class="sidebar-link">Code Coverage View</a>
+  <a href="#view-adoption" class="sidebar-link">Adoption View</a>
   <a href="#detail-panel" class="sidebar-link">Detail Panel</a>
   <a href="#health-formula" class="sidebar-link">Health Score Formula</a>
   <a href="#glossary" class="sidebar-link">Glossary</a>
@@ -178,7 +187,7 @@ a:hover{text-decoration:underline}
 
 <h2 id="the-pipeline">The Pipeline</h2>
 
-<p>The SDD pipeline consists of <strong>9 skills</strong> executed in sequence (7 linear + 2 lateral). Each skill reads the output of previous stages, applies engineering discipline, and produces formal artifacts.</p>
+<p>The SDD pipeline consists of <strong>19 skills</strong> (9 pipeline + 4 onboarding + 5 utility + 1 setup). Each skill reads the output of previous stages, applies engineering discipline, and produces formal artifacts.</p>
 
 <div class="pipeline-flow">
   <span class="pf-label">Linear Pipeline (execute in order)</span>
@@ -321,6 +330,8 @@ a:hover{text-decoration:underline}
   <span class="tc-arrow">&rarr;</span>
   <span class="tc-node">TASK</span>
   <span class="tc-arrow">&rarr;</span>
+  <span class="tc-node" style="background:#2e2216;border-color:#3e3020;color:var(--orange)">COMMIT</span>
+  <span class="tc-arrow">&rarr;</span>
   <span class="tc-node">Code</span>
   <span class="tc-arrow">&rarr;</span>
   <span class="tc-node">Tests</span>
@@ -338,6 +349,8 @@ a:hover{text-decoration:underline}
     <tr><td><strong>REQ &rarr; INV</strong></td><td>Requirement is constrained by business rules</td><td>REQ-EXT-001 &rarr; INV-EXT-005</td></tr>
     <tr><td><strong>REQ &rarr; ADR</strong></td><td>Design decision was made for a requirement</td><td>REQ-SYS-002 &rarr; ADR-001</td></tr>
     <tr><td><strong>FASE &rarr; TASK</strong></td><td>Phase is decomposed into implementation tasks</td><td>FASE-1 &rarr; TASK-F1-001</td></tr>
+    <tr><td><strong>TASK &rarr; COMMIT</strong></td><td>Task produces a git commit (<code>Task:</code> trailer)</td><td>TASK-F1-001 &rarr; commit abc1234</td></tr>
+    <tr><td><strong>COMMIT &rarr; Code</strong></td><td>Commit contains source code changes (<code>Refs:</code> trailer)</td><td>abc1234 &rarr; src/validator.ts</td></tr>
     <tr><td><strong>TASK &rarr; Code</strong></td><td>Task is implemented in source code (<code>Refs:</code>)</td><td>TASK-F1-001 &rarr; src/validator.ts</td></tr>
     <tr><td><strong>TASK &rarr; Tests</strong></td><td>Task is verified by test files (<code>Refs:</code>)</td><td>TASK-F1-001 &rarr; tests/validator.test.ts</td></tr>
   </tbody>
@@ -413,13 +426,146 @@ a:hover{text-decoration:underline}
 
 
 <!-- ============================================================ -->
-<!-- PART 2: READING THE DASHBOARD                                  -->
+<!-- PART 2: ADOPTING SDD IN EXISTING PROJECTS                      -->
+<!-- ============================================================ -->
+
+<h2 id="when-to-onboard">When to Onboard</h2>
+
+<p>SDD supports both <strong>greenfield</strong> (new projects starting from scratch) and <strong>brownfield</strong> (existing projects adopting SDD). The onboarding skills analyze your project and create a custom adoption path.</p>
+
+<div class="info-card">
+  <h4>Decision Rule</h4>
+  <p><strong>Greenfield:</strong> Start with <code>/sdd:requirements-engineer</code> and follow the pipeline in order.</p>
+  <p><strong>Brownfield:</strong> Start with <code>/sdd:onboarding</code> to assess your project and get a tailored adoption plan.</p>
+</div>
+
+<div class="pipeline-flow">
+  <span class="pf-label">Brownfield Adoption Path</span>
+  <div class="pf-step utility">1. Onboarding<br>(diagnose)</div>
+  <span class="pf-arrow">&rarr;</span>
+  <div class="pf-step utility">2. Reverse<br>Engineer</div>
+  <span class="pf-arrow">&rarr;</span>
+  <div class="pf-step utility">3. Reconcile<br>(align)</div>
+  <span class="pf-arrow">&rarr;</span>
+  <div class="pf-step core">Continue<br>Pipeline</div>
+
+  <span class="pf-label">Optional: External Docs</span>
+  <div class="pf-step lateral">Import<br>(external docs)</div>
+  <span class="pf-arrow">&rarr;</span>
+  <div class="pf-step core">Pipeline</div>
+</div>
+
+
+<h2 id="project-scenarios">Project Scenarios</h2>
+
+<p>The onboarding skill classifies projects into <strong>8 scenarios</strong> based on detected signals:</p>
+
+<table class="metric-table">
+  <thead>
+    <tr><th>Scenario</th><th>Signals</th><th>Recommended Path</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Greenfield</strong></td><td>No code, no docs</td><td>Standard pipeline from Step 1</td></tr>
+    <tr><td><strong>Brownfield Bare</strong></td><td>Has code, no documentation</td><td>reverse-engineer &rarr; reconcile &rarr; pipeline</td></tr>
+    <tr><td><strong>SDD Drift</strong></td><td>Has SDD artifacts + code, but out of sync</td><td>reconcile &rarr; continue pipeline</td></tr>
+    <tr><td><strong>Partial SDD</strong></td><td>Some SDD artifacts, incomplete</td><td>Fill gaps &rarr; spec-auditor &rarr; continue</td></tr>
+    <tr><td><strong>Brownfield with Docs</strong></td><td>Has code + external docs (Jira, OpenAPI, etc.)</td><td>import &rarr; reverse-engineer &rarr; reconcile</td></tr>
+    <tr><td><strong>Tests as Spec</strong></td><td>Has tests but no requirements/specs</td><td>reverse-engineer (test-focused) &rarr; pipeline</td></tr>
+    <tr><td><strong>Multi-Team</strong></td><td>Multiple teams, partial adoption</td><td>Per-module onboarding &rarr; reconcile</td></tr>
+    <tr><td><strong>Fork/Migration</strong></td><td>Forked from another project</td><td>import &rarr; reverse-engineer &rarr; reconcile</td></tr>
+  </tbody>
+</table>
+
+
+<h3 id="skill-onboarding">/sdd:onboarding</h3>
+
+<p>The entry point for adopting SDD in any existing project. Performs a 7-phase diagnostic and generates a tailored adoption plan.</p>
+
+<div class="info-card">
+  <h4>What it does</h4>
+  <ul>
+    <li>Scans for existing SDD artifacts, code, tests, external docs</li>
+    <li>Classifies the project into one of 8 scenarios</li>
+    <li>Computes a health score (0-100) with 7 dimension breakdowns</li>
+    <li>Generates an action plan with ordered steps and effort estimates</li>
+  </ul>
+  <h4>Output</h4>
+  <p><code>onboarding/ONBOARDING-REPORT.md</code></p>
+  <h4>Modes</h4>
+  <p><code>/sdd:onboarding</code> (full) | <code>/sdd:onboarding --quick</code> (fast scan) | <code>/sdd:onboarding --reassess</code> (re-evaluate after changes)</p>
+</div>
+
+
+<h3 id="skill-reverse-engineer">/sdd:reverse-engineer</h3>
+
+<p>Analyzes existing code to generate complete SDD artifacts: requirements (EARS syntax), specifications, test plans, architecture plans, and findings reports.</p>
+
+<div class="info-card">
+  <h4>10-Phase Process</h4>
+  <p>Inventory &rarr; Analysis &rarr; <em>Checkpoint 1</em> &rarr; Requirements &rarr; Specs &rarr; Test Plan &rarr; Architecture &rarr; Tasks &rarr; <em>Checkpoint 2</em> &rarr; Findings Report</p>
+  <h4>Findings Markers</h4>
+  <p>Code analysis produces findings tagged with markers:</p>
+  <ul>
+    <li><code>[DEAD-CODE]</code> — Unreachable or unused code</li>
+    <li><code>[TECH-DEBT]</code> — Technical debt patterns</li>
+    <li><code>[WORKAROUND]</code> — Temporary solutions</li>
+    <li><code>[INFERRED]</code> — Requirements inferred from code behavior</li>
+    <li><code>[IMPLICIT-RULE]</code> — Business rules embedded in code logic</li>
+  </ul>
+  <h4>Output</h4>
+  <p><code>requirements/</code>, <code>spec/</code>, <code>test/</code>, <code>plan/</code>, <code>task/</code>, <code>findings/</code>, <code>reverse-engineering/</code></p>
+</div>
+
+
+<h3 id="skill-reconcile">/sdd:reconcile</h3>
+
+<p>Detects drift between SDD specifications and code, classifies divergences, and aligns them through automatic or user-guided resolution.</p>
+
+<div class="info-card">
+  <h4>6 Divergence Types</h4>
+  <table class="metric-table">
+    <thead><tr><th>Type</th><th>Resolution</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>NEW_FUNCTIONALITY</td><td>Auto (update specs)</td><td>Code has features not in specs</td></tr>
+      <tr><td>REMOVED_FEATURE</td><td>Auto (deprecate)</td><td>Spec describes removed code</td></tr>
+      <tr><td>BEHAVIORAL_CHANGE</td><td>Ask user</td><td>Code behaves differently than spec</td></tr>
+      <tr><td>REFACTORING</td><td>Auto (update refs)</td><td>Code restructured, same behavior</td></tr>
+      <tr><td>BUG_OR_DEFECT</td><td>Ask user</td><td>Code behavior appears incorrect</td></tr>
+      <tr><td>AMBIGUOUS</td><td>Ask user</td><td>Cannot determine intent</td></tr>
+    </tbody>
+  </table>
+  <h4>Output</h4>
+  <p><code>reconciliation/RECONCILIATION-REPORT.md</code> + updated specs/requirements</p>
+</div>
+
+
+<h3 id="skill-import">/sdd:import</h3>
+
+<p>Imports external documentation into SDD format. Supports 6 formats with automatic detection.</p>
+
+<div class="info-card">
+  <h4>Supported Formats</h4>
+  <ul>
+    <li><strong>Jira</strong> (JSON/CSV export) &rarr; Requirements with EARS syntax</li>
+    <li><strong>OpenAPI/Swagger</strong> (YAML/JSON) &rarr; API Contracts + Use Cases</li>
+    <li><strong>Markdown</strong> (generic docs) &rarr; Requirements + Specs</li>
+    <li><strong>Notion</strong> (markdown/CSV export) &rarr; Requirements + Specs</li>
+    <li><strong>CSV</strong> (tabular data) &rarr; Requirements</li>
+    <li><strong>Excel</strong> (.xlsx) &rarr; Requirements</li>
+  </ul>
+  <h4>Output</h4>
+  <p><code>requirements/</code>, <code>spec/</code>, <code>import/IMPORT-REPORT.md</code></p>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PART 3: READING THE DASHBOARD                                  -->
 <!-- ============================================================ -->
 
 <h2 id="dashboard-header">Header &amp; Pipeline Bar</h2>
 
 <h3>Header</h3>
-<p>The top bar shows the <strong>project name</strong> and <strong>generation timestamp</strong>. The version badge (<code>v3</code>) indicates the dashboard template version.</p>
+<p>The top bar shows the <strong>project name</strong> and <strong>generation timestamp</strong>. The version badge (<code>v4</code>) indicates the dashboard template version.</p>
 
 <h3>Pipeline Bar</h3>
 <p>Below the header, colored stage cards show the current state of each pipeline stage:</p>
@@ -455,6 +601,10 @@ a:hover{text-decoration:underline}
     <tr><td><strong>Requirements with Code</strong></td><td>% of REQs referenced by source code via <code>Refs:</code> comments</td><td>&ge; 60% (green)</td></tr>
     <tr><td><strong>Requirements with Tests</strong></td><td>% of REQs referenced by test files via <code>Refs:</code> comments</td><td>&ge; 60% (green)</td></tr>
     <tr><td><strong>Orphans</strong></td><td>Artifacts not referenced by any other artifact</td><td>0 (green)</td></tr>
+    <tr><td><strong>Commits</strong></td><td>Git commits with <code>Refs:</code> or <code>Task:</code> trailers (shown only if commits exist)</td><td>Higher = better tracked</td></tr>
+    <tr><td><strong>Requirements with Commits</strong></td><td>% of REQs linked to at least one git commit</td><td>&ge; 50% (green)</td></tr>
+    <tr><td><strong>SDD Adoption</strong></td><td>Adoption health grade and score (shown only if onboarding data exists)</td><td>&ge; 60 (green)</td></tr>
+    <tr><td><strong>Code Findings</strong></td><td>Critical + high findings from reverse engineering (shown only if findings exist)</td><td>0 (green)</td></tr>
     <tr><td><strong>Broken References</strong></td><td>IDs referenced in documents that don't exist as defined artifacts</td><td>0 (green)</td></tr>
   </tbody>
 </table>
@@ -632,6 +782,57 @@ a:hover{text-decoration:underline}
 <p>Click a file to expand and see individual symbols (functions, classes) with their referenced artifact IDs.</p>
 
 
+<h2 id="view-adoption">Adoption View</h2>
+
+<p>The 5th tab, visible when onboarding data exists (or as an empty state prompting you to run <code>/sdd:onboarding</code>). Shows how SDD adoption is progressing in brownfield projects.</p>
+
+<h3>Adoption Journey</h3>
+<p>A horizontal stepper showing the recommended action plan steps from the onboarding report. Each step shows:</p>
+<ul>
+  <li><strong>Completion status</strong> — green checkmark if the corresponding skill has been run, gray circle otherwise</li>
+  <li><strong>Step label</strong> — the skill or action to perform (e.g., "Run reverse-engineer", "Run reconcile")</li>
+</ul>
+<p>The journey visualizes the full adoption path from diagnosis to pipeline entry.</p>
+
+<h3>Scenario Card</h3>
+<p>Shows the detected project scenario (one of 8 types) with:</p>
+<ul>
+  <li><strong>Scenario name</strong> — e.g., "Brownfield Bare", "SDD Drift", "Partial SDD"</li>
+  <li><strong>Confidence level</strong> — how confident the detection is (high/medium/low)</li>
+  <li><strong>Signals</strong> — the indicators that led to this classification (e.g., "has code", "no docs", "partial specs")</li>
+</ul>
+
+<h3>Health Dimensions</h3>
+<p>Seven horizontal bars showing the onboarding health score breakdown across dimensions like documentation, testing, architecture, etc. Each bar shows the dimension score (0-100) against the overall adoption score.</p>
+
+<h3>Findings Panel</h3>
+<p>If reverse engineering has been run, shows code analysis findings:</p>
+<ul>
+  <li><strong>Severity bar</strong> — stacked bar showing distribution across Critical, High, Medium, Low</li>
+  <li><strong>Category breakdown</strong> — findings grouped by type (dead code, tech debt, workarounds, etc.)</li>
+  <li><strong>Top findings</strong> — the most important findings requiring attention</li>
+</ul>
+
+<h3>Reconciliation Panel</h3>
+<p>If reconciliation has been run, shows spec-code alignment:</p>
+<ul>
+  <li><strong>Alignment percentage</strong> — how well specs match the current code</li>
+  <li><strong>Divergence table</strong> — list of divergences by type (NEW_FUNCTIONALITY, REMOVED_FEATURE, BEHAVIORAL_CHANGE, etc.) with counts and resolution status</li>
+</ul>
+
+<h3>Import Panel</h3>
+<p>If import has been run, shows external documentation integration:</p>
+<ul>
+  <li><strong>Source table</strong> — which external sources were imported (Jira, OpenAPI, Markdown, etc.) with artifact counts</li>
+  <li><strong>Quality metrics</strong> — mapping accuracy, duplicate detection, and conversion success rates</li>
+</ul>
+
+<div class="info-card">
+  <h4>Empty State</h4>
+  <p>If no onboarding data exists, the Adoption view shows a prompt: <strong>"Run <code>/sdd:onboarding</code> to diagnose your project"</strong>. Each sub-panel also degrades gracefully — if only onboarding was run but not reverse-engineer, the Findings panel shows its own empty state.</p>
+</div>
+
+
 <h2 id="detail-panel">Detail Panel</h2>
 
 <p>Click any artifact ID in the dashboard to open a slide-out detail panel with 5 tabs:</p>
@@ -701,6 +902,22 @@ a:hover{text-decoration:underline}
   <div class="glossary-item"><div class="glossary-abbr">TDD</div><div class="glossary-def">Test-Driven Development — write tests before code</div></div>
   <div class="glossary-item"><div class="glossary-abbr">OWASP ASVS</div><div class="glossary-def">Application Security Verification Standard</div></div>
   <div class="glossary-item"><div class="glossary-abbr">CWE</div><div class="glossary-def">Common Weakness Enumeration — security vulnerability catalog</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">COMMIT</div><div class="glossary-def">Git commit linked via Task: and Refs: trailers to the traceability chain</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">SHA</div><div class="glossary-def">Secure Hash Algorithm — short git commit identifier (e.g., abc1234)</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Brownfield</div><div class="glossary-def">Existing project with code, adopting SDD retroactively</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Greenfield</div><div class="glossary-def">New project starting from scratch with SDD from day one</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Scenario</div><div class="glossary-def">Project classification (1 of 8) detected by the onboarding skill</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Drift</div><div class="glossary-def">Divergence between SDD specifications and actual code behavior</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Reconciliation</div><div class="glossary-def">Process of detecting and resolving spec-code drift</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">[DEAD-CODE]</div><div class="glossary-def">Finding marker: unreachable or unused code detected by reverse engineering</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">[TECH-DEBT]</div><div class="glossary-def">Finding marker: technical debt patterns in existing code</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">[WORKAROUND]</div><div class="glossary-def">Finding marker: temporary solutions that should be replaced</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">[INFERRED]</div><div class="glossary-def">Finding marker: requirement inferred from code behavior, not documented</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">[IMPLICIT-RULE]</div><div class="glossary-def">Finding marker: business rule embedded in code logic without documentation</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Health Score</div><div class="glossary-def">Weighted 0-100 score measuring traceability completeness (or adoption readiness)</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Blast Radius</div><div class="glossary-def">Set of files/artifacts affected by a change, used in impact analysis</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">Coverage Map</div><div class="glossary-def">Per-file source-to-test mapping with classification (plan-architect §7.4)</div></div>
+  <div class="glossary-item"><div class="glossary-abbr">ISO 14764</div><div class="glossary-def">Standard for software maintenance classification (Corrective/Adaptive/Perfective/Preventive)</div></div>
 </div>
 
 </main>

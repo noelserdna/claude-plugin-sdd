@@ -5,6 +5,23 @@ All notable changes to the SDD plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-03-01
+
+### Dashboard v4.0.0
+- **Bug fixes**: 3 CRITICAL (pipeline null crash, NaN stats, XSS in summary), 4 HIGH (undefined file, NaN gaps, filter conflict, ARIA), 3 MEDIUM (empty missing render, sticky CSS, misleading coverage pct)
+- **Visual modernization**: Shadow system, gradient background, Inter font, SVG health ring chart, improved progress bars, CSS pipeline arrows, view transitions, staggered animations, custom tooltips, bento summary grid, styled scrollbars, focus-visible styles
+- **Adoption view**: New 5th tab showing onboarding status — journey stepper, scenario card, health dimensions, findings panel, reconciliation panel, import panel; graceful empty states per sub-panel
+- **Schema v3**: New `adoption` block with `onboarding`, `reverseEngineering`, `reconciliation`, `import` sub-blocks; new `adoptionStats` in statistics; backward-compatible (defaults to `{ present: false }`)
+- **SKILL.md v3.0.0**: New Step 2.5 scanning onboarding artifacts (5 report types from 5 directories); updated Step 8 assembly and Step 10 report for v3
+
+### Guide v2.0.0
+- **3-part structure**: Part 2 "Adopting SDD in Existing Projects" (new)
+- **Onboarding skills**: Brownfield decision tree, 8 project scenarios table, 4 skill descriptions (onboarding, reverse-engineer, reconcile, import)
+- **Adoption View section**: Journey stepper, scenario card, dimensions, findings, reconciliation, import panels
+- **Updated traceability chain**: 11 nodes (added COMMIT with orange styling)
+- **Updated pipeline skills**: 19 skills count, commit traceability references
+- **Expanded glossary**: 18 new terms (COMMIT, SHA, Brownfield, Greenfield, Scenario, Drift, Reconciliation, finding markers, Health Score, Blast Radius, Coverage Map, ISO 14764)
+
 ## [1.6.0] - 2026-03-01
 
 ### Added
