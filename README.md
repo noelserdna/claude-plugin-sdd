@@ -4,67 +4,13 @@
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin that turns requirements into production code through a structured, auditable pipeline. Based on SWEBOK v4. Works with new and existing projects.
 
-**19 skills** &middot; **8 agents** &middot; **4 hooks** &middot; **Full traceability**
-
-## How It Works
-
-The plugin guides you through a linear pipeline — each step produces artifacts that feed the next:
-
-```mermaid
-graph LR
-    R["Requirements
-    Engineer"] --> S["Specifications
-    Engineer"]
-    S --> A["Spec
-    Auditor"]
-    A --> T["Test
-    Planner"]
-    T --> P["Plan
-    Architect"]
-    P --> G["Task
-    Generator"]
-    G --> I["Task
-    Implementer"]
-
-    style R fill:#4a9eff,stroke:#357abd,color:#fff
-    style S fill:#4a9eff,stroke:#357abd,color:#fff
-    style A fill:#f5a623,stroke:#d4891c,color:#fff
-    style T fill:#4a9eff,stroke:#357abd,color:#fff
-    style P fill:#4a9eff,stroke:#357abd,color:#fff
-    style G fill:#4a9eff,stroke:#357abd,color:#fff
-    style I fill:#7ed321,stroke:#5ca518,color:#fff
-```
-
-Every artifact is traceable end-to-end:
-
-```mermaid
-graph LR
-    REQ["REQ"] --- UC["UC"] --- WF["WF"] --- API["API"] --- BDD["BDD"] --- INV["INV"] --- ADR["ADR"] --- TASK["TASK"] --- COMMIT["COMMIT"] --- CODE["CODE"] --- TEST["TEST"]
-
-    style REQ fill:#4a9eff,stroke:#357abd,color:#fff
-    style UC fill:#4a9eff,stroke:#357abd,color:#fff
-    style WF fill:#4a9eff,stroke:#357abd,color:#fff
-    style API fill:#4a9eff,stroke:#357abd,color:#fff
-    style BDD fill:#7ed321,stroke:#5ca518,color:#fff
-    style INV fill:#7ed321,stroke:#5ca518,color:#fff
-    style ADR fill:#f5a623,stroke:#d4891c,color:#fff
-    style TASK fill:#f5a623,stroke:#d4891c,color:#fff
-    style COMMIT fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style CODE fill:#9b59b6,stroke:#7d3c98,color:#fff
-    style TEST fill:#9b59b6,stroke:#7d3c98,color:#fff
-```
+**20 skills** &middot; **5 MCP tools** &middot; **8 agents** &middot; **4 hooks** &middot; **Full traceability**
 
 ## Installation
 
 ```bash
-# 1. Enable marketplace (once)
-claude plugin marketplace
-
-# 2. Install (inside Claude Code)
-/plugin install github:noelserdna/claude-plugin-sdd
-
-# 3. Verify
-/sdd:pipeline-status
+# Install the plugin (inside Claude Code)
+/install-plugin github:noelserdna/claude-plugin-sdd
 ```
 
 ## Quick Start
@@ -91,109 +37,86 @@ claude plugin marketplace
 /sdd:reconcile                   # Align specs with code
 ```
 
-## What Each Skill Does
+### Monitor and maintain
 
-### Pipeline — from idea to code
-
-```mermaid
-graph TD
-    subgraph Pipeline
-        RE["<b>Requirements Engineer</b><br/>Elicit &amp; write requirements<br/><i>SWEBOK Ch01 · EARS syntax</i>"]
-        SE["<b>Specifications Engineer</b><br/>Domain, use cases, contracts,<br/>workflows, NFRs, ADRs"]
-        SA["<b>Spec Auditor</b><br/>Find &amp; fix spec defects<br/><i>Audit mode + Fix mode</i>"]
-        TP["<b>Test Planner</b><br/>Test plan, matrices,<br/>perf scenarios · <i>SWEBOK Ch04</i>"]
-        PA["<b>Plan Architect</b><br/>FASE files, architecture,<br/>implementation plan · <i>C4 Model</i>"]
-        TG["<b>Task Generator</b><br/>Atomic, reversible tasks<br/><i>1 task = 1 commit</i>"]
-        TI["<b>Task Implementer</b><br/>TDD, code, tests,<br/>atomic commits with SHA"]
-    end
-
-    RE --> SE --> SA --> TP --> PA --> TG --> TI
-
-    style RE fill:#e8f4fd,stroke:#4a9eff
-    style SE fill:#e8f4fd,stroke:#4a9eff
-    style SA fill:#fff3e0,stroke:#f5a623
-    style TP fill:#e8f4fd,stroke:#4a9eff
-    style PA fill:#e8f4fd,stroke:#4a9eff
-    style TG fill:#e8f4fd,stroke:#4a9eff
-    style TI fill:#e8f8e8,stroke:#7ed321
+```
+/sdd:pipeline-status             # What stage am I at? What's next?
+/sdd:dashboard                   # Generate interactive HTML dashboard
+/sdd:traceability-check          # Verify full artifact chain
+/sdd:req-change --cascade=auto   # Change a requirement → auto-propagate
 ```
 
-### Onboarding — adopt SDD in any project
+## How It Works
 
-```mermaid
-graph TD
-    ON["<b>Onboarding</b><br/>Scan project → classify<br/>scenario → adoption plan"]
+The plugin guides you through a linear pipeline — each step produces artifacts that feed the next:
 
-    ON -->|brownfield| RV["<b>Reverse Engineer</b><br/>Code → requirements,<br/>specs, tasks, findings"]
-    ON -->|has docs| IM["<b>Import</b><br/>Jira, OpenAPI, Markdown,<br/>Notion, CSV, Excel → SDD"]
-    ON -->|drift| RC["<b>Reconcile</b><br/>Detect divergences,<br/>auto-resolve or ask user"]
-
-    IM --> RV
-    RV --> RC
-
-    style ON fill:#f3e5f5,stroke:#9b59b6
-    style RV fill:#f3e5f5,stroke:#9b59b6
-    style IM fill:#f3e5f5,stroke:#9b59b6
-    style RC fill:#f3e5f5,stroke:#9b59b6
+```
+Requirements → Specifications → Audit → Test Plan → Architecture → Tasks → Code
 ```
 
-| Skill | Command | What it does |
-|-------|---------|-------------|
-| Onboarding | `/sdd:onboarding` | Diagnoses project state (8 scenarios), generates step-by-step adoption plan |
-| Reverse Engineer | `/sdd:reverse-engineer` | Analyzes code to generate all SDD artifacts + findings report |
-| Reconcile | `/sdd:reconcile` | Detects spec-code drift, classifies divergences, reconciles |
-| Import | `/sdd:import` | Converts external docs to SDD format (6 formats supported) |
+Every artifact is traceable end-to-end:
 
-### Lateral — use anytime
+```
+REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE → TEST
+```
 
-| Skill | Command | What it does |
-|-------|---------|-------------|
-| Security Auditor | `/sdd:security-auditor` | OWASP/CWE security posture audit |
-| Req Change | `/sdd:req-change` | Manage changes with pipeline cascade (ISO 14764) |
+## All 20 Skills
+
+### Pipeline (7 sequential steps)
+
+| Step | Skill | What it does |
+|------|-------|-------------|
+| 1 | `/sdd:requirements-engineer` | Elicit requirements interactively (EARS syntax) |
+| 2 | `/sdd:specifications-engineer` | Generate domain model, use cases, workflows, contracts, NFRs, ADRs |
+| 3 | `/sdd:spec-auditor` | Audit specs for defects, then fix them |
+| 4 | `/sdd:test-planner` | Generate test plan, matrices, and performance scenarios |
+| 5 | `/sdd:plan-architect` | Design architecture (C4), create FASE files |
+| 6 | `/sdd:task-generator` | Decompose into atomic, reversible tasks (1 task = 1 commit) |
+| 7 | `/sdd:task-implementer` | Write code + tests with TDD, commit with SHA capture |
+
+### Lateral (use anytime)
+
+| Skill | What it does |
+|-------|-------------|
+| `/sdd:security-auditor` | OWASP/CWE security posture audit |
+| `/sdd:req-change` | Manage ADD/MODIFY/DEPRECATE with pipeline cascade (ISO 14764) |
+
+### Onboarding (adopt SDD in existing projects)
+
+| Skill | What it does |
+|-------|-------------|
+| `/sdd:onboarding` | Diagnose project state (8 scenarios), generate adoption plan |
+| `/sdd:reverse-engineer` | Analyze code to generate all SDD artifacts + findings report |
+| `/sdd:reconcile` | Detect spec-code drift, classify divergences, reconcile |
+| `/sdd:import` | Convert external docs to SDD format (Jira, OpenAPI, Markdown, Notion, CSV, Excel) |
 
 ### Utilities
 
-| Skill | Command | What it does |
-|-------|---------|-------------|
-| Pipeline Status | `/sdd:pipeline-status` | Current state, staleness detection, next action |
-| Traceability Check | `/sdd:traceability-check` | Verify full artifact chain, find orphans |
-| Dashboard | `/sdd:dashboard` | Interactive HTML traceability dashboard |
-| Notion Sync | `/sdd:sync-notion` | Bidirectional sync with Notion databases |
-| Session Summary | `/sdd:session-summary` | Summarize decisions and progress |
-| Setup | `/sdd:setup` | Initialize `pipeline-state.json` |
+| Skill | What it does |
+|-------|-------------|
+| `/sdd:pipeline-status` | Current state, staleness detection, next action |
+| `/sdd:traceability-check` | Verify full artifact chain, find orphans and broken links |
+| `/sdd:dashboard` | Interactive HTML traceability dashboard with 5 views |
+| `/sdd:code-index` | Index code for deep traceability (optional GitNexus bridge) |
+| `/sdd:sync-notion` | Bidirectional sync with Notion databases |
+| `/sdd:session-summary` | Summarize decisions and progress |
+| `/sdd:setup` | Initialize `pipeline-state.json` |
 
-## Automation
+## MCP Server
 
-The plugin runs guardrails automatically — no manual setup needed.
+The plugin includes a built-in MCP server that exposes the traceability graph as queryable tools:
 
-```mermaid
-graph LR
-    subgraph Hooks
-        H1["H1: Session Start<br/><i>Injects pipeline status</i>"]
-        H2["H2: Upstream Guard<br/><i>Blocks invalid edits</i>"]
-        H3["H3: State Updater<br/><i>Auto-tracks progress</i>"]
-        H4["H4: Session End<br/><i>Consistency check</i>"]
-    end
+| Tool | What it does |
+|------|-------------|
+| `sdd_query` | Search artifacts by text, ID, type, or domain |
+| `sdd_impact` | Blast radius analysis by depth (d1=WILL_BREAK, d2=LIKELY_AFFECTED, d3=MAY_NEED_REVIEW) |
+| `sdd_context` | 360° view of any artifact with all connections |
+| `sdd_coverage` | Gap analysis grouped by business domain or technical layer |
+| `sdd_trace` | Full chain traversal from REQ to TEST with break detection |
 
-    subgraph Agents
-        A1["A1: Constitution<br/>Enforcer"]
-        A2["A2: Cross-Auditor"]
-        A3["A3: Context Keeper"]
-        A4["A4-A8: Watchers<br/><i>Requirements, compliance,<br/>coverage, links, health</i>"]
-    end
+The server reads `dashboard/traceability-graph.json` (generated by `/sdd:dashboard`). Run the dashboard first to populate the data.
 
-    style H1 fill:#e8f4fd,stroke:#4a9eff
-    style H2 fill:#fff3e0,stroke:#f5a623
-    style H3 fill:#e8f4fd,stroke:#4a9eff
-    style H4 fill:#e8f4fd,stroke:#4a9eff
-    style A1 fill:#f3e5f5,stroke:#9b59b6
-    style A2 fill:#f3e5f5,stroke:#9b59b6
-    style A3 fill:#f3e5f5,stroke:#9b59b6
-    style A4 fill:#f3e5f5,stroke:#9b59b6
-```
-
-**Hooks** run on every session — inject context, guard artifacts, track state.
-**Agents** are delegated by Claude or invoked by you — audit, validate, monitor.
+Additionally, a **context augmentation hook** automatically injects traceability context when you search, read, or edit files — so Claude always knows which requirements a file implements.
 
 ## Project Structure
 
@@ -202,44 +125,44 @@ After running the pipeline, your project will contain:
 ```
 your-project/
 ├── pipeline-state.json          # Pipeline progress tracking
-├── requirements/
-│   └── REQUIREMENTS.md          # EARS-syntax requirements
-├── spec/
-│   ├── domain.md                # Domain model
-│   ├── use-cases.md             # Use cases
-│   ├── workflows.md             # Workflows & state machines
-│   ├── contracts.md             # API contracts
-│   ├── nfr.md                   # Non-functional requirements
-│   └── adr/                     # Architecture decision records
-├── audits/
-│   └── AUDIT-BASELINE.md        # Spec audit results
-├── test/
-│   ├── TEST-PLAN.md             # Test strategy
-│   └── TEST-MATRIX-*.md         # Test matrices
-├── plan/
-│   ├── ARCHITECTURE.md          # C4 architecture
-│   ├── PLAN.md                  # Implementation plan
-│   └── fases/FASE-*.md          # Phase breakdown
-├── task/
-│   └── TASK-FASE-*.md           # Atomic tasks (1 task = 1 commit)
+├── requirements/                # EARS-syntax requirements
+├── spec/                        # Domain, use cases, workflows, contracts, NFRs, ADRs
+├── audits/                      # Spec audit and security audit results
+├── test/                        # Test plan, matrices, performance scenarios
+├── plan/                        # Architecture (C4), FASE files, implementation plan
+├── task/                        # Atomic tasks (1 task = 1 commit)
 ├── src/                         # Generated source code
 ├── tests/                       # Generated tests
-└── dashboard/
-    └── index.html               # Traceability dashboard
+└── dashboard/                   # Interactive HTML traceability dashboard
+    ├── index.html
+    ├── guide.html
+    └── traceability-graph.json
 ```
+
+## Automation
+
+The plugin runs guardrails automatically — no manual setup needed.
+
+**Hooks** (run every session):
+- **H1**: Injects pipeline status at session start
+- **H2**: Blocks downstream skills from editing upstream artifacts
+- **H3**: Auto-updates pipeline state when artifacts change
+- **H4**: Consistency check at session end
+
+**Agents** (delegated by Claude or invoked by you):
+- **A1-A3**: Constitution enforcer, cross-auditor, context keeper
+- **A4-A8**: Requirements watcher, spec compliance, test coverage, traceability validator, health monitor
 
 ## Key Conventions
 
 | Convention | Description |
 |-----------|-------------|
-| **EARS syntax** | Requirements use `WHEN <trigger> THE <system> SHALL <behavior>` |
-| **1 task = 1 commit** | Each task produces exactly one commit with `Refs:` and `Task:` trailers |
+| **EARS syntax** | `WHEN <trigger> THE <system> SHALL <behavior>` |
+| **1 task = 1 commit** | Each task produces one commit with `Refs:` and `Task:` trailers |
 | **Clarification-first** | Skills never assume — they ask with structured options |
-| **Baseline auditing** | First audit creates baseline; subsequent ones report only new findings |
+| **Full traceability** | REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE → TEST |
 
 ## Standards
-
-Built on established software engineering standards:
 
 SWEBOK v4 &middot; OWASP ASVS v4 &middot; CWE &middot; IEEE 830 &middot; ISO 14764 &middot; C4 Model &middot; Gherkin/BDD
 
