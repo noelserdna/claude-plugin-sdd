@@ -10,6 +10,5 @@ dashboard-*.png
 # Playwright MCP cache
 .playwright-mcp/
 
-# MCP Server dependencies (dist/ is committed for plugin distribution)
-server/node_modules/
-server/package-lock.json
+# MCP Server: node_modules/ and dist/ ARE committed for plugin distribution
+# (users installing the plugin don't need to run npm install or npm run build)
