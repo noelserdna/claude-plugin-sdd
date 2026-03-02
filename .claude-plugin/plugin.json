@@ -9,6 +9,5 @@
   "repository": "https://github.com/noelserdna/claude-plugin-sdd",
   "license": "MIT",
   "keywords": ["sdd", "swebok", "specification-driven", "pipeline", "requirements", "traceability", "dashboard", "notion"],
-  "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "skills": "./skills/"
 }
