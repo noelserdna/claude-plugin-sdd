@@ -61,8 +61,8 @@ DEF_PATTERNS = [
     ("RN", re.compile(r'^(#{1,6})\s+(RN-\d{3,4})\s*[:\—\u2013\u2014–-]?\s*(.*)', re.IGNORECASE)),
     # FASE: # FASE-0: title
     ("FASE", re.compile(r'^(#{1,6})\s+(FASE-\d{1,2})\s*[:\—\u2013\u2014–-]?\s*(.*)', re.IGNORECASE)),
-    # TASK: ### TASK-F0-001: title
-    ("TASK", re.compile(r'^(#{1,6})\s+(TASK-F\d{1,2}-\d{3,4})\s*[:\—\u2013\u2014–-]?\s*(.*)', re.IGNORECASE)),
+    # TASK: ### TASK-F0-001: title  or  ### [x] TASK-F0-001: title  or  ### ✅ TASK-F0-001: title
+    ("TASK", re.compile(r'^(#{1,6})\s+(?:\[[ x]\]\s*)?(?:✅\s*)?(TASK-F\d{1,2}-\d{3,4})\s*[:\—\u2013\u2014–-]?\s*(.*)', re.IGNORECASE)),
     # TASK in checkbox list: - [ ] TASK-F1-009 description  or  - [x] TASK-F1-009 description
     ("TASK", re.compile(r'^(\s*-\s*\[[ x]\])\s+(TASK-F\d{1,2}-\d{3,4})\s+(.*)', re.IGNORECASE)),
 ]
@@ -121,6 +121,20 @@ TYPE_TO_STAGE = {
     "RN": "specifications-engineer",
     "FASE": "plan-architect",
     "TASK": "task-generator",
+}
+
+STAGE_COUNT_UNITS = {
+    "requirements-engineer": "requirements",
+    "specifications-engineer": "artifacts",
+    "spec-auditor": "findings",
+    "test-planner": "documents",
+    "plan-architect": "phases",
+    "task-generator": "tasks",
+    "task-implementer": "files",
+    "security-auditor": "findings",
+    "req-change": "changes",
+    "tech-designer": "dimensions",
+    "ux-designer": "artifacts",
 }
 
 
@@ -412,6 +426,13 @@ def scan_files(project_dir):
                     for j, tgt in enumerate(ref_list):
                         if i != j:
                             references.append((src, tgt, frel, line_num))
+                # Also connect the file context ID (e.g., API heading) to each ref ID on this line
+                # This fixes orphaned APIs when a Refs: line under an API heading has 2+ IDs
+                if file_context_ids:
+                    ctx_id = file_context_ids[-1]
+                    for rid in ref_list:
+                        if rid != ctx_id:
+                            references.append((ctx_id, rid, frel, line_num))
             elif len(ref_ids) == 1 and file_context_ids:
                 rid = list(ref_ids)[0]
                 ctx_id = file_context_ids[-1]
@@ -920,13 +941,94 @@ def classify_requirements(artifacts, incoming, outgoing):
 
     classification_stats = {"byDomain": {}, "byLayer": {}, "byCategory": {}}
 
+    # Title-based domain inference rules: (keywords, domain_name)
+    # Used as fallback when REQ prefix is generic (F, C, NF) or unknown
+    _domain_keyword_rules = [
+        # Customer & User Management
+        (["cliente", "client", "usuario", "user", "alta", "baja", "registro", "registr", "perfil", "profile",
+          "cuenta", "account", "contacto", "suscript", "subscri"], "Customer Management"),
+        # Service & Product Management
+        (["servicio", "service", "pack", "producto", "product", "tarifa", "plan", "oferta", "offer",
+          "catalogo", "catalog", "tipo de servicio", "contratacion", "contrat"], "Service Management"),
+        # Billing & Payments
+        (["factur", "invoice", "billing", "pago", "payment", "cobro", "cargo", "charge", "precio", "price",
+          "descuento", "discount", "impuesto", "tax", "penalizacion", "penal"], "Billing & Payments"),
+        # Provisioning & Activation
+        (["activacion", "activat", "provision", "suspend", "suspens", "reactivac", "reactivat",
+          "desactivac", "deactivat", "permanencia", "portabilidad"], "Provisioning & Lifecycle"),
+        # Incidents & Support
+        (["incidencia", "incident", "ticket", "soporte", "support", "sla", "escalad", "resolucion",
+          "resolut", "averia", "reclam", "claim", "queja", "complaint"], "Incidents & Support"),
+        # Security & Auth
+        (["seguridad", "security", "autenticac", "authenticat", "autorizac", "authorizat", "password",
+          "contrasena", "token", "sesion", "session", "rol", "role", "permiso", "permission",
+          "cifrado", "encrypt", "audit"], "Security & Auth"),
+        # Integration & APIs
+        (["integracion", "integrat", "api", "webhook", "notificacion", "notificat", "email", "sms",
+          "mensaje", "message", "evento", "event", "sincroniz", "sync"], "Integration & APIs"),
+        # Infrastructure & DevOps
+        (["infraestructura", "infrastructure", "deploy", "despliegue", "monitor", "log", "backup",
+          "migracion", "migrat", "config", "entorno", "environment", "ci/cd", "pipeline"], "Infrastructure & DevOps"),
+        # Reporting & Analytics
+        (["reporte", "report", "estadistic", "statistic", "dashboard", "tablero", "metricas",
+          "metrics", "analitic", "analytic", "kpi", "export"], "Analytics & Reporting"),
+        # Frontend & UI
+        (["interfaz", "interface", "ui", "ux", "pantalla", "screen", "formulario", "form",
+          "vista", "view", "navegacion", "navigation", "responsive", "accesibil"], "Frontend & UI"),
+        # Data & Storage
+        (["base de datos", "database", "almacen", "storage", "cache", "indice", "index",
+          "archivo", "file", "import", "export"], "Data & Storage"),
+    ]
+
+    # Title-based layer inference rules: (keywords, layer_name)
+    _layer_keyword_rules = [
+        (["ui", "ux", "interfaz", "interface", "pantalla", "screen", "formulario", "form",
+          "vista", "view", "frontend", "navegacion", "navigation", "responsive", "css",
+          "componente visual", "widget", "boton", "button", "modal", "menu", "sidebar"], "Frontend"),
+        (["infraestructura", "infrastructure", "deploy", "despliegue", "ci/cd", "pipeline",
+          "docker", "kubernetes", "terraform", "cloud", "servidor", "server", "nginx",
+          "ssl", "dns", "dominio", "domain", "hosting", "monitor", "log"], "Infrastructure"),
+        (["integracion", "integrat", "webhook", "api extern", "third.party", "tercero",
+          "pasarela", "gateway", "sync", "sincroniz", "import", "export", "migra"], "Integration/Deployment"),
+    ]
+
+    def _infer_domain_from_title(title):
+        """Infer business domain from REQ title using keyword matching."""
+        t = title.lower()
+        for keywords, domain_name in _domain_keyword_rules:
+            if any(kw in t for kw in keywords):
+                return domain_name
+        return "Other"
+
+    def _infer_layer_from_title(title):
+        """Infer technical layer from REQ title using keyword matching. Defaults to Backend."""
+        t = title.lower()
+        for keywords, layer_name in _layer_keyword_rules:
+            if any(kw in t for kw in keywords):
+                return layer_name
+        # Default to Backend for functional requirements — most common layer
+        return "Backend"
+
+    # Generic REQ prefixes that don't carry domain information (IEEE 830 style)
+    generic_cats = {"F", "NF", "C", "R", "D", "G", "S", "P"}
+
+    from collections import Counter
+
     for art in artifacts.values():
         if art["type"] != "REQ":
             art["classification"] = None
             continue
 
         cat = art.get("category")
-        domain = domain_map.get(cat, "Other") if cat else "Other"
+        title = art.get("title", "")
+
+        # Business domain: try prefix map first, fallback to title inference
+        if cat and cat not in generic_cats:
+            domain = domain_map.get(cat, None)
+            if domain is None:
+                domain = _infer_domain_from_title(title)
+        else:
+            domain = _infer_domain_from_title(title)
 
         # Technical layer: follow REQ -> UC -> TASK -> FASE
         fases = set()
@@ -953,16 +1055,17 @@ def classify_requirements(artifacts, incoming, outgoing):
                     layers.append("Frontend")
                 else:
                     layers.append("Integration/Deployment")
-            from collections import Counter
             layer = Counter(layers).most_common(1)[0][0]
         else:
-            layer = "Unknown"
+            # Fallback: infer from title keywords instead of showing "Unknown"
+            layer = _infer_layer_from_title(title)
 
         # Functional category from section or category prefix
-        nfr_cats = {"PERF", "SEC", "SCAL", "AVAIL", "TECH", "CACHE", "OBS", "RATE", "VAL", "I18N", "ACC"}
+        nfr_cats = {"PERF", "SEC", "SCAL", "AVAIL", "TECH", "CACHE", "OBS", "RATE", "VAL", "I18N", "ACC", "NF"}
         security_cats = {"SEC", "AUT", "GDP", "GDPR", "DPR"}
         data_cats = {"RET", "DPR", "AUT", "MNT"}
         integration_cats = {"NTF", "INC", "DEP", "MON", "REC", "DER"}
+        constraint_cats = {"C"}
         if cat in nfr_cats:
             func_cat = "Non-Functional"
         elif cat in security_cats:
@@ -971,6 +1074,8 @@ def classify_requirements(artifacts, incoming, outgoing):
             func_cat = "Data"
         elif cat in integration_cats:
             func_cat = "Integration"
+        elif cat in constraint_cats:
+            func_cat = "Constraint"
         else:
             func_cat = "Functional"
 
@@ -1046,16 +1151,99 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
         audit_files = [f for f in os.listdir(audits_dir) if f.lower().endswith(".md")]
         stage_counts["spec-auditor"] = stage_counts.get("spec-auditor", 0) + len(audit_files)
 
+    # Count test plan documents for test-planner stage
+    test_dir = os.path.join(project_dir, "test")
+    if os.path.isdir(test_dir):
+        test_files = [f for f in os.listdir(test_dir) if f.lower().endswith(".md")]
+        stage_counts["test-planner"] = stage_counts.get("test-planner", 0) + len(test_files)
+
+    # Count code + test files for task-implementer stage
+    impl_count = code_stats.get("totalFiles", 0) + test_stats.get("totalTestFiles", 0)
+    if impl_count > 0:
+        stage_counts["task-implementer"] = impl_count
+
+    # Fallback: when a stage is done/stale but count is 0, use summary.metrics from pipeline-state.json
+    # This avoids showing misleading "0" for completed stages whose artifacts aren't captured by graph scanning
+    # Each entry: (metric_keys_to_sum, label_override_when_fallback_used)
+    SUMMARY_METRIC_FALLBACKS = {
+        "test-planner": (["bdd_scenarios", "test_matrices", "perf_scenarios"], "scenarios"),
+        "task-implementer": (["tasks_completed", "commits", "tests_passed"], "tasks/commits"),
+        "spec-auditor": (["total_findings"], "findings"),
+        "plan-architect": (["total_fases", "components"], "phases"),
+        "task-generator": (["total_tasks"], "tasks"),
+        "security-auditor": (["total_findings"], "findings"),
+        "tech-designer": (["dimensions_analyzed"], "dimensions"),
+        "ux-designer": (["dimensions_analyzed"], "dimensions"),
+    }
+    summary_label_overrides = {}
+    for sname, (metric_keys, label_override) in SUMMARY_METRIC_FALLBACKS.items():
+        if stage_counts.get(sname, 0) == 0:
+            sd = stages_data.get(sname, {})
+            if sd.get("status") in ("done", "stale"):
+                summary = sd.get("summary")
+                if summary and isinstance(summary.get("metrics"), dict):
+                    metrics = summary["metrics"]
+                    fallback = sum(metrics.get(k, 0) for k in metric_keys)
+                    if fallback > 0:
+                        stage_counts[sname] = fallback
+                        summary_label_overrides[sname] = label_override
+
+    # Fallback: count files recursively for test-planner if still 0
+    if stage_counts.get("test-planner", 0) == 0:
+        test_dir = os.path.join(project_dir, "test")
+        if os.path.isdir(test_dir):
+            count = 0
+            for root, dirs, filenames in os.walk(test_dir):
+                count += sum(1 for f in filenames if f.lower().endswith(".md"))
+            if count > 0:
+                stage_counts["test-planner"] = count
+
+    # Fallback: count src/tests files with broader extensions for task-implementer if still 0
+    if stage_counts.get("task-implementer", 0) == 0:
+        broad_exts = {".ts", ".js", ".tsx", ".jsx", ".py", ".go", ".rs", ".java", ".kt", ".rb", ".cs", ".cpp", ".c", ".swift"}
+        impl_fallback = 0
+        for search_dir in ["src", "app", "lib", "tests", "test"]:
+            d = os.path.join(project_dir, search_dir)
+            if os.path.isdir(d):
+                for root, dirs, filenames in os.walk(d):
+                    dirs[:] = [dd for dd in dirs if dd not in SKIP_DIRS]
+                    impl_fallback += sum(1 for f in filenames if os.path.splitext(f)[1].lower() in broad_exts)
+        if impl_fallback > 0:
+            stage_counts["task-implementer"] = impl_fallback
+
     pipeline_stages = []
     for sname in stage_order:
         sd = stages_data.get(sname, {})
-        pipeline_stages.append({
+        stage_entry = {
             "name": sname,
             "status": sd.get("status", "unknown"),
             "lastRun": sd.get("lastRun"),
             "artifactCount": stage_counts.get(sname, 0),
-        })
+            "stageLabel": summary_label_overrides.get(sname, STAGE_COUNT_UNITS.get(sname, "artifacts")),
+        }
+        if sd.get("summary"):
+            stage_entry["summary"] = sd["summary"]
+        pipeline_stages.append(stage_entry)
     pipeline_data["stages"] = pipeline_stages
+
+    # Lateral stages (security-auditor, req-change)
+    lateral_names = ["security-auditor", "req-change", "tech-designer", "ux-designer"]
+    lateral_stages = []
+    for lname in lateral_names:
+        ld = stages_data.get(lname)
+        if ld:
+            lateral_entry = {
+                "name": lname,
+                "status": ld.get("status", "unknown"),
+                "lastRun": ld.get("lastRun"),
+                "artifactCount": stage_counts.get(lname, 0),
+                "stageLabel": summary_label_overrides.get(lname, STAGE_COUNT_UNITS.get(lname, "artifacts")),
+            }
+            if ld.get("summary"):
+                lateral_entry["summary"] = ld["summary"]
+            lateral_stages.append(lateral_entry)
+    if lateral_stages:
+        pipeline_data["lateralStages"] = lateral_stages
 
     # Deduplicate relationships
     seen_rels = set()
@@ -1160,6 +1348,12 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
     reqs_with_bdd = count_reqs_with_transitive("BDD", bridge_types=None)
     reqs_with_task = count_reqs_with_transitive("TASK")
 
+    # Functional-only variants for implementation metrics
+    # (NF/C REQs don't generate UCs, tasks, or code — so they shouldn't penalize coverage)
+    functional_req_ids = {r["id"] for r in functional_reqs}
+    reqs_with_bdd_functional = count_reqs_with_transitive("BDD", req_subset=functional_reqs, bridge_types=None)
+    reqs_with_task_functional = count_reqs_with_transitive("TASK", req_subset=functional_reqs)
+
     # Find orphans: artifacts defined but never referenced by any other artifact
     all_defined = set(artifacts.keys())
     all_referenced = set()
@@ -1235,6 +1429,7 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
                     break
 
     reqs_with_commits = len(reqs_with_commits_set)
+    reqs_with_commits_functional = len(reqs_with_commits_set & functional_req_ids)
 
     # ── Code refs processing ─────────────────────────────────
     artifact_code_refs = {}
@@ -1260,6 +1455,7 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
                     reqs_with_code_set.add(rid)
                     break
     reqs_with_code = len(reqs_with_code_set)
+    reqs_with_code_functional = len(reqs_with_code_set & functional_req_ids)
 
     # ── Test refs processing ──────────────────────────────────
     artifact_test_refs = {}
@@ -1285,6 +1481,7 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
                     reqs_with_tests_set.add(rid)
                     break
     reqs_with_tests = len(reqs_with_tests_set)
+    reqs_with_tests_functional = len(reqs_with_tests_set & functional_req_ids)
 
     # ── Classification ────────────────────────────────────────
     classification_stats = classify_requirements(artifacts, incoming, outgoing)
@@ -1306,6 +1503,9 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
         "byType": OrderedDict(sorted(by_type.items())),
         "totalRelationships": len(deduped_rels),
         "traceabilityCoverage": {
+            "totalReqs": total_reqs,
+            "totalFunctionalReqs": total_functional_reqs,
+            "reqBreakdown": classification_stats.get("byCategory", {}),
             "reqsWithUCs": {
                 "count": reqs_with_uc,
                 "total": total_functional_reqs,
@@ -1315,26 +1515,41 @@ def build_graph(project_dir, output_dir, project_name, artifacts, references, al
                 "count": reqs_with_bdd,
                 "total": total_reqs,
                 "percentage": round(reqs_with_bdd / total_reqs * 100, 1) if total_reqs > 0 else 0,
+                "functionalCount": reqs_with_bdd_functional,
+                "functionalTotal": total_functional_reqs,
+                "functionalPercentage": round(reqs_with_bdd_functional / total_functional_reqs * 100, 1) if total_functional_reqs > 0 else 0,
             },
             "reqsWithTasks": {
                 "count": reqs_with_task,
                 "total": total_reqs,
                 "percentage": round(reqs_with_task / total_reqs * 100, 1) if total_reqs > 0 else 0,
+                "functionalCount": reqs_with_task_functional,
+                "functionalTotal": total_functional_reqs,
+                "functionalPercentage": round(reqs_with_task_functional / total_functional_reqs * 100, 1) if total_functional_reqs > 0 else 0,
             },
             "reqsWithCode": {
                 "count": reqs_with_code,
                 "total": total_reqs,
                 "percentage": round(reqs_with_code / total_reqs * 100, 1) if total_reqs > 0 else 0,
+                "functionalCount": reqs_with_code_functional,
+                "functionalTotal": total_functional_reqs,
+                "functionalPercentage": round(reqs_with_code_functional / total_functional_reqs * 100, 1) if total_functional_reqs > 0 else 0,
             },
             "reqsWithTests": {
                 "count": reqs_with_tests,
                 "total": total_reqs,
                 "percentage": round(reqs_with_tests / total_reqs * 100, 1) if total_reqs > 0 else 0,
+                "functionalCount": reqs_with_tests_functional,
+                "functionalTotal": total_functional_reqs,
+                "functionalPercentage": round(reqs_with_tests_functional / total_functional_reqs * 100, 1) if total_reqs > 0 else 0,
             },
             "reqsWithCommits": {
                 "count": reqs_with_commits,
                 "total": total_reqs,
                 "percentage": round(reqs_with_commits / total_reqs * 100, 1) if total_reqs > 0 else 0,
+                "functionalCount": reqs_with_commits_functional,
+                "functionalTotal": total_functional_reqs,
+                "functionalPercentage": round(reqs_with_commits_functional / total_functional_reqs * 100, 1) if total_functional_reqs > 0 else 0,
             },
         },
         "orphans": orphans[:50],  # cap at 50 to avoid bloat

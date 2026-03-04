@@ -409,6 +409,41 @@ tr.row-none td:last-child{color:var(--red)}
 .stage-popover-filter{font-size:11px;padding:4px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;color:var(--text2);cursor:pointer}
 .stage-popover-filter:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 
+/* Stage popover summary */
+.stage-popover-summary{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.stage-popover-summary.stale{opacity:.5}
+.stage-popover-summary .stale-badge{font-size:10px;color:var(--yellow);font-weight:600;margin-left:6px}
+.sps-artifacts{font-size:11px;margin:4px 0}
+.sps-artifacts table{width:100%;border-collapse:collapse}
+.sps-artifacts td{padding:2px 4px;font-size:11px}
+.sps-artifacts td:first-child{color:var(--text2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sps-metrics{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.sps-metric{font-size:10px;padding:2px 6px;background:var(--surface3);border-radius:3px;color:var(--text2);white-space:nowrap}
+.sps-metric b{color:var(--text1)}
+.sps-highlights{font-size:11px;color:var(--text2);margin:4px 0;padding-left:14px}
+.sps-highlights li{margin:2px 0}
+.sps-next{font-size:11px;color:var(--green);font-style:italic;margin-top:6px}
+
+/* Pipeline Summary view */
+.pipeline-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:16px}
+.ps-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative}
+.ps-card.stale{opacity:.6}
+.ps-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ps-card-name{font-weight:600;font-size:14px}
+.ps-card-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.ps-card-artifacts{margin:8px 0}
+.ps-card-artifacts table{width:100%;border-collapse:collapse;font-size:12px}
+.ps-card-artifacts td{padding:3px 6px;border-bottom:1px solid var(--border)}
+.ps-card-artifacts td:first-child{color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-card-metrics{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.ps-card-metric{font-size:11px;padding:3px 8px;background:var(--surface3);border-radius:4px}
+.ps-card-metric b{color:var(--accent)}
+.ps-card-highlights{font-size:12px;color:var(--text2);padding-left:16px;margin:8px 0}
+.ps-card-highlights li{margin:3px 0}
+.ps-card-next{font-size:12px;color:var(--green);font-style:italic;margin-top:10px}
+.ps-card-placeholder{font-size:12px;color:var(--text2);font-style:italic;padding:20px 0;text-align:center}
+.ps-section-label{font-size:13px;font-weight:600;color:var(--text2);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
 /* Live dot */
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:livePulse 2s ease-in-out infinite}
 .live-dot.stale{background:var(--yellow);animation:none}
@@ -464,6 +499,7 @@ tr.row-none td:last-child{color:var(--red)}
   <button class="view-tab" data-view="classification">Classification</button>
   <button class="view-tab" data-view="coverage">Code Coverage</button>
   <button class="view-tab" data-view="adoption">Adoption</button>
+  <button class="view-tab" data-view="pipelinesummary">Pipeline Summary</button>
 </div>
 
 <!-- Filters -->
@@ -524,10 +560,13 @@ tr.row-none td:last-child{color:var(--red)}
 <!-- ADOPTION VIEW -->
 <div class="view" id="view-adoption"></div>
 
+<!-- PIPELINE SUMMARY VIEW -->
+<div class="view" id="view-pipelinesummary"></div>
+
 <!-- Empty state -->
 <div class="empty" id="empty" style="display:none">
   <h2>No artifacts found</h2>
-  <p>Run the SDD pipeline to generate traceability artifacts, then re-run <code>/sdd-dashboard</code>.</p>
+  <p>Run the SDD pipeline to generate traceability artifacts, then re-run <code>/sdd:dashboard</code>.</p>
 </div>
 
 <!-- Detail Panel -->
@@ -593,7 +632,7 @@ tr.row-none td:last-child{color:var(--red)}
   function getStagePrompt(stageName, stageStatus) {
     var stCov = (DATA.statistics || {}).traceabilityCoverage || {};
     if (stageStatus === "stale") {
-      return "El stage " + stageName + " esta stale porque sus inputs cambiaron. Re-ejecuta el skill para actualizar los artefactos de salida.\n\nEjecuta /sdd-" + stageName;
+      return "El stage " + stageName + " esta stale porque sus inputs cambiaron. Re-ejecuta el skill para actualizar los artefactos de salida.\n\nEjecuta /sdd:" + stageName;
     }
     if (stageStatus === "running") {
       return "El stage " + stageName + " esta en ejecucion. Espera a que termine.";
@@ -603,32 +642,32 @@ tr.row-none td:last-child{color:var(--red)}
     }
 
     var ucGap = stCov.reqsWithUCs ? ((stCov.reqsWithUCs.total || 0) - (stCov.reqsWithUCs.count || 0)) : 0;
-    var bddGap = stCov.reqsWithBDD ? ((stCov.reqsWithBDD.total || 0) - (stCov.reqsWithBDD.count || 0)) : 0;
-    var taskGap = stCov.reqsWithTasks ? ((stCov.reqsWithTasks.total || 0) - (stCov.reqsWithTasks.count || 0)) : 0;
+    var bddGap = stCov.reqsWithBDD ? ((stCov.reqsWithBDD.functionalTotal || stCov.reqsWithBDD.total || 0) - (stCov.reqsWithBDD.functionalCount || stCov.reqsWithBDD.count || 0)) : 0;
+    var taskGap = stCov.reqsWithTasks ? ((stCov.reqsWithTasks.functionalTotal || stCov.reqsWithTasks.total || 0) - (stCov.reqsWithTasks.functionalCount || stCov.reqsWithTasks.count || 0)) : 0;
 
     switch (stageName) {
       case "requirements-engineer":
-        return "Necesito definir los requisitos del proyecto. Captura requisitos funcionales y no funcionales usando sintaxis EARS.\n\nEjecuta /sdd-requirements-engineer";
+        return "Necesito definir los requisitos del proyecto. Captura requisitos funcionales y no funcionales usando sintaxis EARS.\n\nEjecuta /sdd:requirements-engineer";
       case "specifications-engineer":
         var msg = "Necesito transformar los requisitos en especificaciones formales (Use Cases, Workflows, API Contracts, BDD Scenarios, Invariants, ADRs).";
         if (ucGap > 0) msg += "\n\nHay " + ucGap + " requisitos sin Use Cases.";
-        return msg + "\n\nEjecuta /sdd-specifications-engineer";
+        return msg + "\n\nEjecuta /sdd:specifications-engineer";
       case "spec-auditor":
-        return "Necesito auditar las especificaciones para detectar ambiguedades, silencios peligrosos, contradicciones e invariantes implicitos.\n\nEjecuta /sdd-spec-auditor";
+        return "Necesito auditar las especificaciones para detectar ambiguedades, silencios peligrosos, contradicciones e invariantes implicitos.\n\nEjecuta /sdd:spec-auditor";
       case "test-planner":
         var tmsg = "Necesito generar el plan de testing (test matrix, BDD scenarios, performance scenarios).";
         if (bddGap > 0) tmsg += "\n\nHay " + bddGap + " requisitos sin cobertura BDD.";
-        return tmsg + "\n\nEjecuta /sdd-test-planner";
+        return tmsg + "\n\nEjecuta /sdd:test-planner";
       case "plan-architect":
-        return "Necesito disenar el plan de implementacion: FASEs, arquitectura y mapeo spec-to-phase.\n\nEjecuta /sdd-plan-architect";
+        return "Necesito disenar el plan de implementacion: FASEs, arquitectura y mapeo spec-to-phase.\n\nEjecuta /sdd:plan-architect";
       case "task-generator":
         var gmsg = "Necesito descomponer las FASEs en tareas atomicas con commits convencionales y trazabilidad.";
         if (taskGap > 0) gmsg += "\n\nHay " + taskGap + " requisitos sin tareas.";
-        return gmsg + "\n\nEjecuta /sdd-task-generator";
+        return gmsg + "\n\nEjecuta /sdd:task-generator";
       case "task-implementer":
-        return "Necesito implementar las tareas: desarrollo test-first, commits atomicos, verificacion de trazabilidad.\n\nEjecuta /sdd-task-implementer";
+        return "Necesito implementar las tareas: desarrollo test-first, commits atomicos, verificacion de trazabilidad.\n\nEjecuta /sdd:task-implementer";
       default:
-        return "Ejecuta /sdd-" + stageName;
+        return "Ejecuta /sdd:" + stageName;
     }
   }
 
@@ -683,12 +722,15 @@ tr.row-none td:last-child{color:var(--red)}
   var TARGETS = { ucs: 90, bdd: 70, tasks: 80, code: 60, tests: 50 };
   function computeHealthScore(cov) {
     if (!cov) return 0;
+    // Use functional percentages where available (implementation metrics)
+    // This avoids penalizing for NFR/constraint REQs that don't produce code/tasks
+    function _fp(m) { return (m || {}).functionalPercentage || (m || {}).percentage || 0; }
     var metrics = [
       { val: (cov.reqsWithUCs || {}).percentage || 0, target: TARGETS.ucs, weight: 25 },
-      { val: (cov.reqsWithBDD || {}).percentage || 0, target: TARGETS.bdd, weight: 20 },
-      { val: (cov.reqsWithTasks || {}).percentage || 0, target: TARGETS.tasks, weight: 20 },
-      { val: (cov.reqsWithCode || {}).percentage || 0, target: TARGETS.code, weight: 20 },
-      { val: (cov.reqsWithTests || {}).percentage || 0, target: TARGETS.tests, weight: 15 }
+      { val: _fp(cov.reqsWithBDD), target: TARGETS.bdd, weight: 20 },
+      { val: _fp(cov.reqsWithTasks), target: TARGETS.tasks, weight: 20 },
+      { val: _fp(cov.reqsWithCode), target: TARGETS.code, weight: 20 },
+      { val: _fp(cov.reqsWithTests), target: TARGETS.tests, weight: 15 }
     ];
     var score = 0;
     metrics.forEach(function(m) {
@@ -717,22 +759,24 @@ tr.row-none td:last-child{color:var(--red)}
     var uc = c.reqsWithUCs || {};
     if ((uc.percentage || 0) < TARGETS.ucs) {
       var gap = (uc.total || 0) - (uc.count || 0);
-      recs.push({ priority: "high", text: gap + " requirements lack use cases", action: "Run /sdd-specifications-engineer", prompt: getStagePrompt("specifications-engineer", "pending") });
+      recs.push({ priority: "high", text: gap + " requirements lack use cases", action: "Run /sdd:specifications-engineer", prompt: getStagePrompt("specifications-engineer", "pending") });
     }
     var cod = c.reqsWithCode || {};
-    if ((cod.percentage || 0) < TARGETS.code) {
-      var gap2 = (cod.total || 0) - (cod.count || 0);
-      recs.push({ priority: "high", text: gap2 + " requirements have no code references", action: "Add Refs: comments to source files", prompt: "Agrega comentarios Refs: en tu codigo fuente para vincular funciones a requisitos SDD.\n\nEjemplo:\n/**\n * Refs: UC-001, INV-EXT-005\n */\nfunction validateInput() { ... }" });
+    var codPct = cod.functionalPercentage || cod.percentage || 0;
+    if (codPct < TARGETS.code) {
+      var gap2 = (cod.functionalTotal || cod.total || 0) - (cod.functionalCount || cod.count || 0);
+      recs.push({ priority: "high", text: gap2 + " functional requirements have no code references", action: "Add Refs: comments to source files", prompt: "Agrega comentarios Refs: en tu codigo fuente para vincular funciones a requisitos SDD.\n\nEjemplo:\n/**\n * Refs: UC-001, INV-EXT-005\n */\nfunction validateInput() { ... }" });
     }
     var tst = c.reqsWithTests || {};
-    if ((tst.percentage || 0) < TARGETS.tests) {
-      var gap3 = (tst.total || 0) - (tst.count || 0);
-      recs.push({ priority: "medium", text: gap3 + " requirements have no test coverage", action: "Add Refs: to test descriptions", prompt: "Agrega comentarios Refs: en tus archivos de test para vincular tests a requisitos.\n\nEjemplo:\n// Refs: UC-001, INV-EXT-005\ndescribe('Validation', () => { ... })" });
+    var tstPct = tst.functionalPercentage || tst.percentage || 0;
+    if (tstPct < TARGETS.tests) {
+      var gap3 = (tst.functionalTotal || tst.total || 0) - (tst.functionalCount || tst.count || 0);
+      recs.push({ priority: "medium", text: gap3 + " functional requirements have no test coverage", action: "Add Refs: to test descriptions", prompt: "Agrega comentarios Refs: en tus archivos de test para vincular tests a requisitos.\n\nEjemplo:\n// Refs: UC-001, INV-EXT-005\ndescribe('Validation', () => { ... })" });
     }
     var orphans = (st.orphans || []).length;
-    if (orphans > 0) recs.push({ priority: "medium", text: orphans + " orphaned artifacts found", action: "Review and link or remove", prompt: "Ejecuta /sdd-traceability-check para ver los artefactos huerfanos y decidir si vincularlos o eliminarlos." });
+    if (orphans > 0) recs.push({ priority: "medium", text: orphans + " orphaned artifacts found", action: "Review and link or remove", prompt: "Ejecuta /sdd:traceability-check para ver los artefactos huerfanos y decidir si vincularlos o eliminarlos." });
     var broken = (st.brokenReferences || []).length;
-    if (broken > 0) recs.push({ priority: "high", text: broken + " broken references", action: "Fix or remove invalid references", prompt: "Ejecuta /sdd-traceability-check para localizar las referencias rotas y corregirlas." });
+    if (broken > 0) recs.push({ priority: "high", text: broken + " broken references", action: "Fix or remove invalid references", prompt: "Ejecuta /sdd:traceability-check para localizar las referencias rotas y corregirlas." });
     var audit = st.auditData;
     if (audit && audit.latestGate === "FAIL") {
       var critHigh = ((audit.bySeverity || {}).critical || 0) + ((audit.bySeverity || {}).high || 0);
@@ -768,8 +812,10 @@ tr.row-none td:last-child{color:var(--red)}
     div.setAttribute("role", "button");
     div.setAttribute("tabindex", "0");
     div.dataset.stage = s.name;
+    var countDisplay = (s.status === 'pending' || s.status === 'unknown') && !s.artifactCount
+      ? '\u2014' : String(s.artifactCount || 0);
     div.innerHTML = '<div class="stage-name">' + esc(s.name.replace(/-/g," ")) + '</div>'
-      + '<div class="stage-count">' + (s.artifactCount || 0) + '</div>'
+      + '<div class="stage-count">' + countDisplay + '</div>'
       + '<div class="stage-status">' + esc(s.status || "unknown") + '</div>';
 
     // Build popover
@@ -792,12 +838,43 @@ tr.row-none td:last-child{color:var(--red)}
       tbl += '</table>';
       auditProgHtml = tbl;
     }
+    var summaryHtml = "";
+    if (s.summary) {
+      var isStale = s.status === "stale";
+      summaryHtml = '<div class="stage-popover-summary' + (isStale ? ' stale' : '') + '">';
+      if (isStale) summaryHtml += '<span class="stale-badge">stale summary</span>';
+      if (s.summary.metrics) {
+        summaryHtml += '<div class="sps-metrics">';
+        Object.keys(s.summary.metrics).forEach(function(k) {
+          summaryHtml += '<span class="sps-metric"><b>' + s.summary.metrics[k] + '</b> ' + esc(k.replace(/_/g,' ')) + '</span>';
+        });
+        summaryHtml += '</div>';
+      }
+      if (s.summary.artifacts && s.summary.artifacts.length > 0) {
+        summaryHtml += '<div class="sps-artifacts"><table>';
+        s.summary.artifacts.slice(0, 5).forEach(function(a) {
+          summaryHtml += '<tr><td>' + esc(a.file) + '</td><td>' + esc(a.label) + '</td></tr>';
+        });
+        if (s.summary.artifacts.length > 5) summaryHtml += '<tr><td colspan="2" style="color:var(--text2)">+' + (s.summary.artifacts.length - 5) + ' more</td></tr>';
+        summaryHtml += '</table></div>';
+      }
+      if (s.summary.highlights && s.summary.highlights.length > 0) {
+        summaryHtml += '<ul class="sps-highlights">';
+        s.summary.highlights.forEach(function(h) { summaryHtml += '<li>' + esc(h) + '</li>'; });
+        summaryHtml += '</ul>';
+      }
+      if (s.summary.nextStep) {
+        summaryHtml += '<div class="sps-next">&rarr; ' + esc(s.summary.nextStep) + '</div>';
+      }
+      summaryHtml += '</div>';
+    }
     pop.innerHTML = '<div class="stage-popover-header">'
       + '<strong>' + esc(STAGE_LABELS[s.name] || s.name.replace(/-/g," ")) + '</strong>'
       + '<span class="stage-popover-status ' + statusCls + '">' + esc(s.status || "unknown") + '</span>'
       + '</div>'
-      + '<div class="stage-popover-info">' + (s.artifactCount || 0) + ' artifacts &middot; Last run: ' + esc(lastRun) + '</div>'
+      + '<div class="stage-popover-info">' + (s.artifactCount || 0) + ' ' + esc(s.stageLabel || 'artifacts') + ' &middot; Last run: ' + esc(lastRun) + '</div>'
       + auditProgHtml
+      + summaryHtml
       + '<div class="prompt-block" style="font-size:11px;max-height:120px;overflow-y:auto">' + esc(prompt) + '</div>'
       + '<div class="stage-popover-actions"></div>';
     div.appendChild(pop);
@@ -846,17 +923,36 @@ tr.row-none td:last-child{color:var(--red)}
 
   addStat("Artifacts", st.totalArtifacts || 0, typeSummary(st.byType), "", "Total number of traced artifacts across all types");
   addStat("Relationships", st.totalRelationships || 0, "", "", "Total number of links between artifacts");
+  // Helper: build subtitle showing functional count and note about excluded REQs
+  function covSubtitle(m, label) {
+    if (!m) return "";
+    var fc = m.functionalCount, ft = m.functionalTotal;
+    if (fc != null && ft != null) {
+      var excluded = (m.total || 0) - ft;
+      var sub = fc + "/" + ft + " functional";
+      if (excluded > 0) sub += " (" + excluded + " NFR/constraint excluded)";
+      return sub;
+    }
+    return m.count + "/" + m.total + (label ? " " + label : "");
+  }
+  // Helper: pick functional percentage as primary, falling back to overall
+  function covPct(m) {
+    if (!m) return 0;
+    if (m.functionalPercentage != null) return m.functionalPercentage;
+    return m.percentage || 0;
+  }
+
   var covUC = (cov.reqsWithUCs && cov.reqsWithUCs.percentage != null) ? cov.reqsWithUCs.percentage : 0;
   addStat("Requirements with Use Cases", covUC.toFixed(1) + "%", (cov.reqsWithUCs ? cov.reqsWithUCs.count + "/" + cov.reqsWithUCs.total + " functional" : ""), covUC >= 80 ? "good" : "", "Percentage of functional requirements with at least one Use Case (excludes NFR/Constraint REQs)");
-  var covCode = (cov.reqsWithCode && cov.reqsWithCode.percentage != null) ? cov.reqsWithCode.percentage : 0;
-  addStat("Requirements with Code", covCode.toFixed(1) + "%", (cov.reqsWithCode ? cov.reqsWithCode.count + "/" + cov.reqsWithCode.total : ""), covCode >= 60 ? "good" : "", "Percentage of requirements referenced by source code (Refs: comments)");
-  var covTest = (cov.reqsWithTests && cov.reqsWithTests.percentage != null) ? cov.reqsWithTests.percentage : 0;
-  addStat("Requirements with Tests", covTest.toFixed(1) + "%", (cov.reqsWithTests ? cov.reqsWithTests.count + "/" + cov.reqsWithTests.total : ""), covTest >= 60 ? "good" : "", "Percentage of requirements referenced by test files");
+  var covCode = covPct(cov.reqsWithCode);
+  addStat("Requirements with Code", covCode.toFixed(1) + "%", covSubtitle(cov.reqsWithCode), covCode >= 60 ? "good" : "", "Percentage of functional requirements referenced by source code (Refs: comments). NFR/constraint REQs excluded — they don't produce code directly.");
+  var covTest = covPct(cov.reqsWithTests);
+  addStat("Requirements with Tests", covTest.toFixed(1) + "%", covSubtitle(cov.reqsWithTests), covTest >= 60 ? "good" : "", "Percentage of functional requirements referenced by test files. NFR/constraint REQs excluded.");
   var cs = st.commitStats || {};
   if (cs.totalCommits > 0) {
     addStat("Commits", cs.totalCommits, cs.commitsWithRefs + " with refs, " + cs.commitsWithTasks + " with tasks", "", "Git commits with Refs: or Task: trailers linking to SDD artifacts");
-    var covCommit = (cov.reqsWithCommits && cov.reqsWithCommits.percentage != null) ? cov.reqsWithCommits.percentage : 0;
-    addStat("Requirements with Commits", covCommit.toFixed(1) + "%", (cov.reqsWithCommits ? cov.reqsWithCommits.count + "/" + cov.reqsWithCommits.total : ""), covCommit >= 50 ? "good" : "", "Percentage of requirements linked to at least one git commit via Refs/Task trailers");
+    var covCommit = covPct(cov.reqsWithCommits);
+    addStat("Requirements with Commits", covCommit.toFixed(1) + "%", covSubtitle(cov.reqsWithCommits), covCommit >= 50 ? "good" : "", "Percentage of functional requirements linked to at least one git commit. NFR/constraint REQs excluded.");
   }
   var orphanCount = (st.orphans || []).length;
   addStat("Orphans", orphanCount, "Unreferenced", orphanCount > 0 ? "warn" : "good", "Artifacts not referenced by any other artifact");
@@ -1800,19 +1896,32 @@ tr.row-none td:last-child{color:var(--red)}
 
     // Card 1: Coverage Progress
     html += '<div class="summary-card"><h3>Traceability Coverage</h3>';
+    // Note explaining functional-only scope
+    var nfTotal = (cov.totalReqs || 0) - (cov.totalFunctionalReqs || 0);
+    if (nfTotal > 0) {
+      html += '<div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.5rem;">Showing functional requirements only (' + (cov.totalFunctionalReqs || 0) + ' of ' + (cov.totalReqs || 0) + '). ' + nfTotal + ' NFR/constraint REQs excluded from implementation metrics.</div>';
+    }
     var metrics = [
-      { label: "Requirements \u2192 Use Cases", val: cov.reqsWithUCs, target: TARGETS.ucs },
-      { label: "Requirements \u2192 Code", val: cov.reqsWithCode, target: TARGETS.code },
-      { label: "Requirements \u2192 Tests", val: cov.reqsWithTests, target: TARGETS.tests },
-      { label: "Requirements \u2192 Acceptance Tests", val: cov.reqsWithBDD, target: TARGETS.bdd },
-      { label: "Requirements \u2192 Tasks", val: cov.reqsWithTasks, target: TARGETS.tasks },
-      { label: "Requirements \u2192 Commits", val: cov.reqsWithCommits, target: 50 }
+      { label: "Requirements \u2192 Use Cases", val: cov.reqsWithUCs, target: TARGETS.ucs, useFunctional: false },
+      { label: "Functional REQs \u2192 Code", val: cov.reqsWithCode, target: TARGETS.code, useFunctional: true },
+      { label: "Functional REQs \u2192 Tests", val: cov.reqsWithTests, target: TARGETS.tests, useFunctional: true },
+      { label: "Functional REQs \u2192 Acceptance Tests", val: cov.reqsWithBDD, target: TARGETS.bdd, useFunctional: true },
+      { label: "Functional REQs \u2192 Tasks", val: cov.reqsWithTasks, target: TARGETS.tasks, useFunctional: true },
+      { label: "Functional REQs \u2192 Commits", val: cov.reqsWithCommits, target: 50, useFunctional: true }
     ];
     metrics.forEach(function(m) {
-      var pct = m.val ? m.val.percentage : 0;
+      var pct = m.useFunctional ? covPct(m.val) : (m.val ? m.val.percentage : 0);
       var color = pct >= m.target ? "var(--green)" : pct >= m.target*0.6 ? "var(--yellow)" : "var(--red)";
+      var countInfo = "";
+      if (m.val) {
+        if (m.useFunctional && m.val.functionalCount != null) {
+          countInfo = m.val.functionalCount + "/" + m.val.functionalTotal;
+        } else {
+          countInfo = m.val.count + "/" + m.val.total;
+        }
+      }
       html += '<div class="summary-progress">';
-      html += '<div class="summary-progress-header"><span>' + esc(m.label) + '</span><span>' + pct.toFixed(1) + '%</span></div>';
+      html += '<div class="summary-progress-header"><span>' + esc(m.label) + '</span><span>' + pct.toFixed(1) + '% <small style="color:var(--text2);font-weight:normal">(' + countInfo + ')</small></span></div>';
       html += '<div class="summary-progress-bar"><div class="summary-progress-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
       html += '</div>';
     });
@@ -1869,7 +1978,7 @@ tr.row-none td:last-child{color:var(--red)}
       html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px">';
       html += '<span style="width:8px;height:8px;border-radius:50%;background:' + stColor + ';flex-shrink:0" aria-label="Status: ' + esc(s.status || 'unknown') + '"></span>';
       html += '<span style="flex:1">' + esc(s.name.replace(/-/g, " ")) + '</span>';
-      html += '<span style="font-size:11px;color:var(--text2)">' + (s.artifactCount || 0) + ' artifacts</span>';
+      html += '<span style="font-size:11px;color:var(--text2)">' + (s.artifactCount || 0) + ' ' + esc(s.stageLabel || 'artifacts') + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -1901,7 +2010,7 @@ tr.row-none td:last-child{color:var(--red)}
       el.innerHTML = '<div class="adopt-empty">'
         + '<h3>No Adoption Data</h3>'
         + '<p>Run onboarding skills to populate this view with project adoption status.</p>'
-        + '<div class="adopt-empty-cmd">/sdd-onboarding</div>'
+        + '<div class="adopt-empty-cmd">/sdd:onboarding</div>'
         + '</div>';
       return;
     }
@@ -1917,7 +2026,7 @@ tr.row-none td:last-child{color:var(--red)}
         var done = isStepDone(step.skill, adoption);
         html += '<div class="adopt-step' + (done ? ' done' : '') + '">';
         html += '<div class="adopt-step-num">' + step.step + '</div>';
-        html += '<div class="adopt-step-skill">/sdd-' + esc(step.skill) + '</div>';
+        html += '<div class="adopt-step-skill">/sdd:' + esc(step.skill) + '</div>';
         html += '<div class="adopt-step-desc">' + esc(step.description) + '</div>';
         html += '<span class="adopt-step-effort ' + esc(step.effort || 'medium') + '">' + esc(step.effort || 'medium') + '</span>';
         html += '</div>';
@@ -1942,7 +2051,7 @@ tr.row-none td:last-child{color:var(--red)}
       }
       html += '</div>';
     } else {
-      html += '<div class="adopt-card"><h3>Project Scenario</h3><div class="empty-section">Run /sdd-onboarding</div></div>';
+      html += '<div class="adopt-card"><h3>Project Scenario</h3><div class="empty-section">Run /sdd:onboarding</div></div>';
     }
 
     // Health Dimensions card
@@ -1962,7 +2071,7 @@ tr.row-none td:last-child{color:var(--red)}
       });
       html += '</div>';
     } else {
-      html += '<div class="adopt-card"><h3>Health Dimensions</h3><div class="empty-section">Run /sdd-onboarding</div></div>';
+      html += '<div class="adopt-card"><h3>Health Dimensions</h3><div class="empty-section">Run /sdd:onboarding</div></div>';
     }
     html += '</div>'; // end row-2
 
@@ -2004,7 +2113,7 @@ tr.row-none td:last-child{color:var(--red)}
       }
       html += '</div>';
     } else {
-      html += '<div class="adopt-card"><h3>Code Findings</h3><div class="empty-section">Run /sdd-reverse-engineer</div></div>';
+      html += '<div class="adopt-card"><h3>Code Findings</h3><div class="empty-section">Run /sdd:reverse-engineer</div></div>';
     }
 
     // Reconciliation card
@@ -2032,7 +2141,7 @@ tr.row-none td:last-child{color:var(--red)}
       }
       html += '</div>';
     } else {
-      html += '<div class="adopt-card"><h3>Spec-Code Alignment</h3><div class="empty-section">Run /sdd-reconcile</div></div>';
+      html += '<div class="adopt-card"><h3>Spec-Code Alignment</h3><div class="empty-section">Run /sdd:reconcile</div></div>';
     }
     html += '</div>'; // end row-2b
 
@@ -2096,6 +2205,100 @@ tr.row-none td:last-child{color:var(--red)}
     }
   }
   addAdoptionStats();
+
+  // ==========================================
+  // PIPELINE SUMMARY VIEW
+  // ==========================================
+  function renderPipelineSummaryView() {
+    var el = $("view-pipelinesummary");
+    var pipeline = DATA.pipeline || {};
+    var stages = pipeline.stages || [];
+    var lateralStages = pipeline.lateralStages || [];
+    var allStages = stages.concat(lateralStages);
+
+    var hasSummary = allStages.some(function(s) { return s.summary; });
+    if (!hasSummary) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">'
+        + '<h3>No Pipeline Summaries Yet</h3>'
+        + '<p>Summaries appear here as each pipeline skill completes. Run any pipeline skill to populate this view.</p>'
+        + '</div>';
+      return;
+    }
+
+    var html = '';
+
+    function renderCard(s) {
+      var isStale = s.status === "stale";
+      var card = '<div class="ps-card' + (isStale ? ' stale' : '') + '">';
+      var statusCls = "st-" + (s.status || "unknown");
+      card += '<div class="ps-card-header">';
+      card += '<span class="ps-card-name">' + esc(STAGE_LABELS[s.name] || s.name.replace(/-/g, " ")) + '</span>';
+      card += '<span class="ps-card-status ' + statusCls + '">' + esc(s.status || "unknown") + '</span>';
+      card += '</div>';
+
+      if (!s.summary) {
+        card += '<div class="ps-card-placeholder">Not yet completed</div>';
+        card += '</div>';
+        return card;
+      }
+
+      var sm = s.summary;
+      if (isStale) {
+        card += '<div style="font-size:10px;color:var(--yellow);margin-bottom:8px">&#9888; Stale — summary from previous run</div>';
+      }
+
+      // Metrics chips
+      if (sm.metrics) {
+        card += '<div class="ps-card-metrics">';
+        Object.keys(sm.metrics).forEach(function(k) {
+          card += '<span class="ps-card-metric"><b>' + sm.metrics[k] + '</b> ' + esc(k.replace(/_/g, ' ')) + '</span>';
+        });
+        card += '</div>';
+      }
+
+      // Artifacts table
+      if (sm.artifacts && sm.artifacts.length > 0) {
+        card += '<div class="ps-card-artifacts"><table>';
+        sm.artifacts.slice(0, 8).forEach(function(a) {
+          card += '<tr><td>' + esc(a.file) + '</td><td>' + esc(a.label) + '</td></tr>';
+        });
+        if (sm.artifacts.length > 8) card += '<tr><td colspan="2" style="color:var(--text2)">+' + (sm.artifacts.length - 8) + ' more</td></tr>';
+        card += '</table></div>';
+      }
+
+      // Highlights
+      if (sm.highlights && sm.highlights.length > 0) {
+        card += '<ul class="ps-card-highlights">';
+        sm.highlights.forEach(function(h) { card += '<li>' + esc(h) + '</li>'; });
+        card += '</ul>';
+      }
+
+      // Next step
+      if (sm.nextStep) {
+        card += '<div class="ps-card-next">&rarr; ' + esc(sm.nextStep) + '</div>';
+      }
+
+      card += '</div>';
+      return card;
+    }
+
+    // Linear pipeline stages
+    html += '<div class="ps-section-label">Pipeline Stages</div>';
+    html += '<div class="pipeline-summary-grid">';
+    stages.forEach(function(s) { html += renderCard(s); });
+    html += '</div>';
+
+    // Lateral stages
+    if (lateralStages.length > 0) {
+      html += '<div class="ps-section-label">Lateral Skills</div>';
+      html += '<div class="pipeline-summary-grid">';
+      lateralStages.forEach(function(s) { html += renderCard(s); });
+      html += '</div>';
+    }
+
+    el.innerHTML = html;
+  }
+  renderPipelineSummaryView();
 
   // ==========================================
   // JSONP LIVE STATUS SYSTEM
@@ -2202,6 +2405,7 @@ tr.row-none td:last-child{color:var(--red)}
   doFilter();
   renderCodeCoverage();
   renderAdoptionView();
+  renderPipelineSummaryView();
   initLiveStatus();
 })();
 </script>

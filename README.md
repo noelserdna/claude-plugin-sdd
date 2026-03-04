@@ -4,13 +4,16 @@
 
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin that turns requirements into production code through a structured, auditable pipeline. Based on SWEBOK v4. Works with new and existing projects.
 
-**20 skills** &middot; **5 MCP tools** &middot; **8 agents** &middot; **4 hooks** &middot; **Full traceability**
+**22 skills** &middot; **5 MCP tools** &middot; **8 agents** &middot; **4 hooks** &middot; **Full traceability**
 
 ## Installation
 
 ```bash
-# Install the plugin (inside Claude Code)
-/install-plugin github:noelserdna/claude-plugin-sdd
+# Step 1: Add the marketplace (once)
+/plugin marketplace add noelserdna/claude-plugin-sdd
+
+# Step 2: Install the plugin
+/plugin install sdd@noelserdna-claude-plugin-sdd
 ```
 
 ## Quick Start
@@ -60,7 +63,7 @@ Every artifact is traceable end-to-end:
 REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE → TEST
 ```
 
-## All 20 Skills
+## All 22 Skills
 
 ### Pipeline (7 sequential steps)
 
@@ -80,6 +83,8 @@ REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE �
 |-------|-------------|
 | `/sdd:security-auditor` | OWASP/CWE security posture audit |
 | `/sdd:req-change` | Manage ADD/MODIFY/DEPRECATE with pipeline cascade (ISO 14764) |
+| `/sdd:tech-designer` | 12-dimension technical architecture exploration (ATAM-lite) |
+| `/sdd:ux-designer` | 12-dimension UI/UX design system (WCAG 2.1 AA, wireframes, tokens) |
 
 ### Onboarding (adopt SDD in existing projects)
 
