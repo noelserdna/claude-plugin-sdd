@@ -81,10 +81,10 @@ REQ → UC → WF → API → BDD → INV → ADR → TASK → COMMIT → CODE �
 
 | Skill | What it does |
 |-------|-------------|
-| `/sdd:security-auditor` | OWASP/CWE security posture audit |
-| `/sdd:req-change` | Manage ADD/MODIFY/DEPRECATE with pipeline cascade (ISO 14764) |
-| `/sdd:tech-designer` | 12-dimension technical architecture exploration (ATAM-lite) |
-| `/sdd:ux-designer` | 12-dimension UI/UX design system (WCAG 2.1 AA, wireframes, tokens) |
+| `/sdd:security-auditor` | OWASP ASVS v4 / CWE security posture audit of specs → `audits/SECURITY-AUDIT-BASELINE.md` |
+| `/sdd:req-change` | Manage ADD/MODIFY/DEPRECATE changes with optional pipeline cascade (ISO 14764) |
+| `/sdd:tech-designer` | Technical architecture: stack, auth, API, infra, CI/CD, data, observability, cost, i18n (ATAM-lite) → `design/` |
+| `/sdd:ux-designer` | UI/UX design system: components, tokens, wireframes, responsive, accessibility, forms, theming → `ux/` |
 
 ### Onboarding (adopt SDD in existing projects)
 
