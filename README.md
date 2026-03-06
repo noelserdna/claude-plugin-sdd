@@ -158,6 +158,38 @@ The plugin runs guardrails automatically — no manual setup needed.
 - **A1-A3**: Constitution enforcer, cross-auditor, context keeper
 - **A4-A8**: Requirements watcher, spec compliance, test coverage, traceability validator, health monitor
 
+## Code Intelligence (Optional)
+
+The `/sdd:code-index` skill maps code symbols (functions, classes, modules) to SDD artifacts for deep traceability. It works in two modes:
+
+- **Lite mode** (default): Regex-based analysis — no extra dependencies needed
+- **Full mode**: Uses [GitNexus](https://github.com/nicobailon/gitnexus) for AST-level call graph analysis, cross-file references, and execution flow mapping
+
+### Installing GitNexus
+
+```bash
+npm install -g gitnexus
+```
+
+Or use it without installing:
+
+```bash
+npx gitnexus analyze
+```
+
+**Requirements:** Node.js 18+
+
+### Usage
+
+```
+/sdd:code-index            # Full mode (with GitNexus)
+/sdd:code-index --lite     # Lite mode (regex only)
+/sdd:code-index --status   # Check index status
+/sdd:code-index --refresh  # Refresh only changed files
+```
+
+With GitNexus, you get symbol-level call graphs, transitive inference (max 2 hops), execution flow mapping, and community-based domain detection. Without it, the skill still works but provides file-level symbol detection and direct `// Refs:` annotations only.
+
 ## Key Conventions
 
 | Convention | Description |
