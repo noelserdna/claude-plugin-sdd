@@ -1,7 +1,12 @@
 ---
 name: spec-auditor
 description: This skill should be used when auditing, reviewing, or validating technical specifications for defects. Performs systematic cross-document analysis to detect ambiguities, implicit rules, dangerous silences, semantic ambiguities, contradictions, incomplete specifications, weak/missing invariants, evolution risks, and implicit decisions without ADRs. Generates audit reports with location, problem description, and resolution questions. Does NOT propose implementations, write code, or assume unspecified behavior. For users maintaining specification repositories requiring quality assurance and defect detection.
-version: "1.2.0"
+version: "1.3.0"
+hooks:
+  Stop:
+    - type: prompt
+      prompt: "Check the audit report. Are there any P0 (Critical) or P1 (High) findings that remain unresolved? Answer YES only if all P0/P1 findings have been addressed or documented with explicit user acknowledgment."
+      once: true
 ---
 
 # SDD Spec Auditor Skill
